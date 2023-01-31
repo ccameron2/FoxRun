@@ -10,7 +10,7 @@ void AGamesFiveGameModeBase::StartPlay()
 	FVector Location;
 	FTransform Transform;
 	FVector Scale = FVector(0.08, 0.08, 0.08);
-	for (int i = 0; i < 1000; i++)
+	for (int i = 0; i < 500; i++)
 	{		
 		Location.X = FMath::RandRange(0, 500);
 		Location.Y = FMath::RandRange(0, 500);
