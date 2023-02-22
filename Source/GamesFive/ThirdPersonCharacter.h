@@ -31,12 +31,18 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	virtual void OnConstruction(const FTransform& Transform) override;
+
 	void MoveForward(float AxisValue);
 	void Strafe(float AxisValue);
 	void Turn(float AxisValue);
 	void LookUp(float AxisValue);
 	void Fire();
 	void Jump();
+	void SwapCamera();
+	void ToggleSprint();
+
+	bool Walking = false;
 
 	UPROPERTY(EditAnywhere)
 		float MoveSpeed = 200.0f;
@@ -60,43 +66,43 @@ public:
 		float MaxGold = 100.0f;
 
 	UFUNCTION(BlueprintCallable)
-		float GetHealth();
+		float GetMaxHealth() { return MaxHealth; }
 
 	UFUNCTION(BlueprintCallable)
-		float GetEnergy();
+		float GetMaxEnergy() { return MaxEnergy; }
 
 	UFUNCTION(BlueprintCallable)
-		float GetMana();
+		float GetMaxMana() { return MaxMana; }
 
 	UFUNCTION(BlueprintCallable)
-		float GetGold();
+		float GetMaxGold() { return MaxGold; }
 
 	UFUNCTION(BlueprintCallable)
-		float GetExperience();
+		float GetMaxExperience() { return MaxExp; }
 
 	UFUNCTION(BlueprintCallable)
-		float GetLives();
+		float GetHealth() { return HealthPoints; }
 
 	UFUNCTION(BlueprintCallable)
-		float GetPlayerLevel();
+		float GetEnergy() { return Energy; }
+
+	UFUNCTION(BlueprintCallable)
+		float GetMana() { return Mana; }
+
+	UFUNCTION(BlueprintCallable)
+		float GetGold() { return Gold; }
+
+	UFUNCTION(BlueprintCallable)
+		float GetExperience() { return ExpPoints; }
+
+	UFUNCTION(BlueprintCallable)
+		float GetLives() { return Lives; }
+
+	UFUNCTION(BlueprintCallable)
+		float GetPlayerLevel() { return Level; }
 
 	UFUNCTION(BlueprintCallable)
 		void LevelUp();
-
-	UFUNCTION(BlueprintCallable)
-		float GetMaxHealth();
-
-	UFUNCTION(BlueprintCallable)
-		float GetMaxEnergy();
-
-	UFUNCTION(BlueprintCallable)
-		float GetMaxMana();
-
-	UFUNCTION(BlueprintCallable)
-		float GetMaxGold();
-
-	UFUNCTION(BlueprintCallable)
-		float GetMaxExperience();
 
 private:
 
@@ -131,7 +137,10 @@ private:
 		void OnOverlapEnd(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 	UPROPERTY(EditAnywhere)
-		UCameraComponent* Camera;
+		UCameraComponent* ThirdPersonCamera;
+
+	UPROPERTY(EditAnywhere)
+		UCameraComponent* FirstPersonCamera;
 
 	UPROPERTY(EditAnywhere)
 		USpringArmComponent* SpringArm;

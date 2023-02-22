@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 #include "ThirdPersonCharacter.h"
 #include "GameFramework/PawnMovementComponent.h" 
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 AThirdPersonCharacter::AThirdPersonCharacter()
@@ -14,13 +15,20 @@ AThirdPersonCharacter::AThirdPersonCharacter()
 	// Spring Arm settings
 	SpringArm->TargetArmLength = 300.0f;
 	SpringArm->bEnableCameraLag = false;
-	SpringArm->SetRelativeRotation((new FRotator(0.0f, 0.0f, 0.0f))->Quaternion());
+	SpringArm->SetRelativeRotation(FRotator(0.0f, 0.0f, 0.0f));
 	SpringArm->SetRelativeLocation(FVector(-361.0f, -305.0f, 113.0f));
 	SpringArm->SetupAttachment(RootComponent);
 
-	//Create Camera and attach to SpringArm
-	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
-	Camera->SetupAttachment(SpringArm);
+	// Create third person camera and attach to SpringArm
+	ThirdPersonCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("Third Person Camera"));
+	ThirdPersonCamera->SetupAttachment(SpringArm);
+
+	// Create first person camera
+	FirstPersonCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("First Person Camera"));
+	FirstPersonCamera->SetupAttachment(GetMesh(), "head");
+	FirstPersonCamera->SetRelativeRotation(FRotator(0, 0, 0));
+	FirstPersonCamera->SetRelativeLocation(FVector{ 0,10,0 });
+	FirstPersonCamera->bUsePawnControlRotation = true;
 
 	GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &AThirdPersonCharacter::OnOverlapBegin);
 	GetCapsuleComponent()->OnComponentEndOverlap.AddDynamic(this, &AThirdPersonCharacter::OnOverlapEnd);
@@ -33,7 +41,8 @@ AThirdPersonCharacter::AThirdPersonCharacter()
 void AThirdPersonCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
+	ThirdPersonCamera->SetActive(false);
+	FirstPersonCamera->SetActive(true);
 }
 
 // Called every frame
@@ -52,6 +61,11 @@ void AThirdPersonCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInp
 
 }
 
+void AThirdPersonCharacter::OnConstruction(const FTransform& Transform)
+{
+	FirstPersonCamera->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, "head");
+}
+
 void AThirdPersonCharacter::MoveForward(float AxisValue)
 {
 	//Move character forwards
@@ -61,9 +75,9 @@ void AThirdPersonCharacter::MoveForward(float AxisValue)
 		const FRotator YawRotation(0, Rotation.Yaw, 0);
 		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
 
-		AddMovementInput(Direction, AxisValue);
+		if(!Walking) AddMovementInput(Direction, AxisValue);
+		else AddMovementInput(Direction, AxisValue / 4);
 	}
-	//AddMovementInput(GetActorForwardVector() * AxisValue);
 }
 
 void AThirdPersonCharacter::Strafe(float AxisValue)
@@ -74,9 +88,9 @@ void AThirdPersonCharacter::Strafe(float AxisValue)
 		const FRotator Rotation = Controller->GetControlRotation();
 		const FRotator YawRotation(0, Rotation.Yaw, 0);
 		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
-		AddMovementInput(Direction, AxisValue);
+		if (!Walking) AddMovementInput(Direction, AxisValue);
+		else AddMovementInput(Direction, AxisValue / 4);
 	}
-	//AddMovementInput(GetActorRightVector() * AxisValue);
 }
 
 void AThirdPersonCharacter::Turn(float AxisValue)
@@ -106,64 +120,15 @@ void AThirdPersonCharacter::Jump()
 	}	
 }
 
-float AThirdPersonCharacter::GetMaxHealth()
+void AThirdPersonCharacter::SwapCamera()
 {
-	return MaxHealth;
+	ThirdPersonCamera->ToggleActive();
+	FirstPersonCamera->ToggleActive();
 }
 
-float AThirdPersonCharacter::GetMaxEnergy()
+void AThirdPersonCharacter::ToggleSprint()
 {
-	return MaxEnergy;
-}
-
-float AThirdPersonCharacter::GetMaxMana()
-{
-	return MaxMana;
-}
-
-float AThirdPersonCharacter::GetMaxGold()
-{
-	return MaxGold;
-}
-
-float AThirdPersonCharacter::GetMaxExperience()
-{
-	return MaxExp;
-}
-
-float AThirdPersonCharacter::GetHealth()
-{
-	return HealthPoints;
-}
-
-float AThirdPersonCharacter::GetEnergy()
-{
-	return Energy;
-}
-
-float AThirdPersonCharacter::GetMana()
-{
-	return Mana;
-}
-
-float AThirdPersonCharacter::GetGold()
-{
-	return Gold;
-}
-
-float AThirdPersonCharacter::GetExperience()
-{
-	return ExpPoints;
-}
-
-float AThirdPersonCharacter::GetLives()
-{
-	return Lives;
-}
-
-float AThirdPersonCharacter::GetPlayerLevel()
-{
-	return Level;
+	Walking = !Walking;
 }
 
 void AThirdPersonCharacter::LevelUp()

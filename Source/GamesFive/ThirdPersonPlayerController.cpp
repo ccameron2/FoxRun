@@ -23,7 +23,9 @@ void AThirdPersonPlayerController::SetupInputComponent()
 	InputComponent->BindAxis("Strafe", this, &AThirdPersonPlayerController::CallStrafe);
 	InputComponent->BindAction("Jump", EInputEvent::IE_Pressed, this, &AThirdPersonPlayerController::CallJump);
 	InputComponent->BindAxis("Look Up", this, &AThirdPersonPlayerController::CallLookUp);
-	//InputComponent->BindAction("Sprint", EInputEvent::IE_Pressed, this, &AThirdPersonPlayerController::CallSprint);
+	InputComponent->BindAction("Swap Camera", EInputEvent::IE_Pressed, this, &AThirdPersonPlayerController::CallSwapCamera);
+	InputComponent->BindAction("Sprint", EInputEvent::IE_Pressed, this, &AThirdPersonPlayerController::CallToggleSprint);
+	InputComponent->BindAction("Sprint", EInputEvent::IE_Released, this, &AThirdPersonPlayerController::CallToggleSprint);
 
 }
 
@@ -79,5 +81,21 @@ void AThirdPersonPlayerController::CallLookUp(float Value)
 	if (PlayerPawn)
 	{
 		PlayerPawn->LookUp(Value);
+	}
+}
+
+void AThirdPersonPlayerController::CallSwapCamera()
+{
+	if (PlayerPawn)
+	{
+		PlayerPawn->SwapCamera();
+	}
+}
+
+void AThirdPersonPlayerController::CallToggleSprint()
+{
+	if (PlayerPawn)
+	{
+		PlayerPawn->ToggleSprint();
 	}
 }

@@ -35,6 +35,7 @@ private:
 	virtual void CallStrafe(float Value);
 	virtual void CallJump();
 	virtual void CallLookUp(float Value);
-	
+	virtual void CallSwapCamera();
+	virtual void CallToggleSprint();
 
 };

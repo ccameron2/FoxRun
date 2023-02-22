@@ -3,6 +3,8 @@
 #pragma once
 
 #include "ResourcePickup.h"
+#include "Terrain.h"
+#include "BackTerrain.h"
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
@@ -21,5 +23,19 @@ protected:
 private:
 	UPROPERTY(EditAnywhere)
 		TSubclassOf<AResourcePickup> HealthClass;
+	UPROPERTY(EditAnywhere)
+		TSubclassOf<ATerrain> TerrainClass;
+	UPROPERTY(EditAnywhere)
+		TSubclassOf<ABackTerrain> BackTerrainClass;
 
+	UPROPERTY(EditAnywhere)
+		ATerrain* Terrain;
+
+	UPROPERTY(EditAnywhere)
+		ABackTerrain* LBackTerrain;
+
+	UPROPERTY(EditAnywhere)
+		ABackTerrain* RBackTerrain;
+
+	int Seed = 0;
 };
