@@ -3,8 +3,7 @@
 #pragma once
 
 #include "ResourcePickup.h"
-#include "Terrain.h"
-#include "BackTerrain.h"
+#include "TerrainBlock.h"
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
@@ -18,24 +17,20 @@ UCLASS()
 class GAMESFIVE_API AGamesFiveGameModeBase : public AGameModeBase
 {
 	GENERATED_BODY()
+
 protected:
 	virtual void StartPlay() override;
+
 private:
+	UPROPERTY(VisibleAnywhere)
+		TArray<ATerrainBlock*> TerrainBlocks;
+
+	UPROPERTY(EditAnywhere)
+		TSubclassOf<ATerrainBlock> TerrainBlockClass;
+
 	UPROPERTY(EditAnywhere)
 		TSubclassOf<AResourcePickup> HealthClass;
-	UPROPERTY(EditAnywhere)
-		TSubclassOf<ATerrain> TerrainClass;
-	UPROPERTY(EditAnywhere)
-		TSubclassOf<ABackTerrain> BackTerrainClass;
-
-	UPROPERTY(EditAnywhere)
-		ATerrain* Terrain;
-
-	UPROPERTY(EditAnywhere)
-		ABackTerrain* LBackTerrain;
-
-	UPROPERTY(EditAnywhere)
-		ABackTerrain* RBackTerrain;
 
 	int Seed = 0;
+
 };

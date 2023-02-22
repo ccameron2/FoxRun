@@ -1,33 +1,25 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 #include "GamesFiveGameModeBase.h"
 
+#include "External/FastNoise.h"
+
 void AGamesFiveGameModeBase::StartPlay()
 {
 	Super::StartPlay();
 
-	FActorSpawnParameters SpawnParams;
 	FVector location = FVector{ 0,0,0 };
 	FVector scale = FVector(1, 1, 1);
 	FTransform transform;
 	transform.SetScale3D(scale);
 	transform.SetTranslation(location);
 
-	Terrain = GetWorld()->SpawnActor<ATerrain>(TerrainClass, transform);
+	Seed = FMath::RandRange(0, 69420);
 
 	FastNoise noise;
-	noise.SetNoiseType(FastNoise::SimplexFractal);
-	noise.SetSeed(Seed);
-	Terrain->CreateLanes(&noise);
+	//noise.SetNoiseType(FastNoise::SimplexFractal);
+	//noise.SetSeed(Seed);
 
-	location = FVector{ 1230,0,0 };
-	transform.SetLocation(location);
+	TerrainBlocks.Push(GetWorld()->SpawnActor<ATerrainBlock>(TerrainBlockClass, transform));
+	TerrainBlocks[0]->PlaceBlocks(&noise);
 
-	LBackTerrain = GetWorld()->SpawnActor<ABackTerrain>(BackTerrainClass, transform);
-	LBackTerrain->CreateTerrain(&noise);
-
-	location = FVector{ -1470.0,0,0 };
-	transform.SetLocation(location);
-
-	RBackTerrain = GetWorld()->SpawnActor<ABackTerrain>(BackTerrainClass, transform);
-	RBackTerrain->CreateTerrain(&noise);
 }

@@ -55,7 +55,7 @@ public:
 		UProceduralMeshComponent* TerrainMesh;
 
 	UPROPERTY(EditAnywhere)
-		float treeNoiseThreshold = 0.6f;
+		float treeNoiseThreshold = 0.8f;
 private:
 	TArray<FVector> CalculateNormals(TArray<FVector> vertices, TArray<int32> triangles);
 	void PlaceTrees(FastNoise* noise);

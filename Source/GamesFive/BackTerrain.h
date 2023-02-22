@@ -32,7 +32,7 @@ public:
 		UProceduralMeshComponent* TerrainMesh;
 
 	UPROPERTY(EditAnywhere)
-		float treeNoiseThreshold = 0.55f;
+		float treeNoiseThreshold = 0.7f;
 
 	void CreateTerrain(FastNoise* noise);
 private:
