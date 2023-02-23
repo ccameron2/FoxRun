@@ -41,8 +41,8 @@ AThirdPersonCharacter::AThirdPersonCharacter()
 void AThirdPersonCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	ThirdPersonCamera->SetActive(false);
-	FirstPersonCamera->SetActive(true);
+	ThirdPersonCamera->SetActive(true);
+	FirstPersonCamera->SetActive(false);
 }
 
 // Called every frame
@@ -51,7 +51,7 @@ void AThirdPersonCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 	if(Energy < MaxEnergy){ Energy++; }
 	if (ExpPoints >= MaxExp) { LevelUp(); }
-	
+	MoveForward(1);
 }
 
 // Called to bind functionality to input
@@ -96,7 +96,7 @@ void AThirdPersonCharacter::Strafe(float AxisValue)
 void AThirdPersonCharacter::Turn(float AxisValue)
 {
 	//Turn character left and right
-	AddControllerYawInput(AxisValue);
+	//AddControllerYawInput(AxisValue);
 }
 
 void AThirdPersonCharacter::LookUp(float AxisValue)

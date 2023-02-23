@@ -21,7 +21,7 @@ ATerrain::ATerrain()
 	ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset1(TEXT("StaticMesh'/Game/Models/Nature/CommonTree_2'"));
 	ValleyStaticMeshes.Push(CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Tree1 Static Mesh")));
 	ValleyStaticMeshes[0]->SetStaticMesh(MeshAsset1.Object);
-	ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset2(TEXT("StaticMesh'/Game/Models/Nature/PineTree_3'"));
+	ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset2(TEXT("StaticMesh'/Game/Models/Nature/PineTree_5'"));
 	ValleyStaticMeshes.Push(CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Tree2 Static Mesh")));
 	ValleyStaticMeshes[1]->SetStaticMesh(MeshAsset2.Object);
 	ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset3(TEXT("StaticMesh'/Game/Models/Nature/CommonTree_5'"));
@@ -62,7 +62,7 @@ void ATerrain::CreateLanes(FastNoise* noise)
 
 		for(auto& vertex : laneGeo.Vertices)
 		{
-			vertex.X += (LaneXOffset * Scale * i);
+			vertex.X += (LaneXOffset * Scale * i) + (i * Scale);
 		}
 
 		// Store the tallest vector index and height
@@ -75,9 +75,9 @@ void ATerrain::CreateLanes(FastNoise* noise)
 			// Get input vector from vertex list and sample noise at different levels
 			auto input = laneGeo.Vertices[j];
 			auto result1 = noise->GetNoise((input.X + GetActorLocation().X) / 300, (input.Y + GetActorLocation().Y) / 300);
-			laneGeo.Vertices[j].Z += result1 * 400;
-			auto result2 = noise->GetNoise((input.X + GetActorLocation().X) / 20, (input.Y + GetActorLocation().X) / 20);
-			laneGeo.Vertices[j].Z += result2 * 200;
+			laneGeo.Vertices[j].Z += result1 * 200;
+			auto result2 = noise->GetNoise((input.X + GetActorLocation().X) / 20, (input.Y + GetActorLocation().Y) / 20);
+			laneGeo.Vertices[j].Z += result2 * 100;
 
 			// Find the tallest vector and store in variables
 			if (laneGeo.Vertices[j].Z > tallestVectorHeight)
@@ -151,7 +151,7 @@ void ATerrain::PlaceTrees(FastNoise* noise)
 	{
 		for(auto& vertex : valley.Vertices)
 		{
-			float treeNoise = noise->GetNoise(vertex.X, vertex.Y);
+			float treeNoise = noise->GetNoise((vertex.X + GetActorLocation().X) / 0.25, (vertex.Y + GetActorLocation().Y) / 0.25);
 
 			if(treeNoise > treeNoiseThreshold)
 			{
@@ -159,7 +159,7 @@ void ATerrain::PlaceTrees(FastNoise* noise)
 
 				// Set location to vertex position and scale randomly
 				FTransform transform;
-				transform.SetLocation(vertex);
+				transform.SetLocation(vertex + GetActorLocation());
 				FQuat Rotation = FVector{ 0,0,0 }.ToOrientationQuat();
 				transform.SetRotation(Rotation);
 				transform.SetScale3D(FVector{ float(FMath::RandRange(0.8,1.2)) });

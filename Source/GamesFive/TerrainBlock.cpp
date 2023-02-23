@@ -25,26 +25,33 @@ void ATerrainBlock::Tick(float DeltaTime)
 
 }
 
-void ATerrainBlock::PlaceBlocks(FastNoise* noise)
+//void ATerrainBlock::BeginDestroy()
+//{
+//	Terrain->Destroy();
+//	LBackTerrain->Destroy();
+//	RBackTerrain->Destroy();
+//}
+
+void ATerrainBlock::PlaceBlocks(FastNoise* noise, FVector location)
 {
-	FVector location = FVector{ 0,0,0 };
+	FVector spawnlocation = location;
 	FVector scale = FVector(1, 1, 1);
 	FTransform transform;
 	transform.SetScale3D(scale);
-	transform.SetTranslation(location);
+	transform.SetTranslation(spawnlocation);
 
 	Terrain = GetWorld()->SpawnActor<ATerrain>(TerrainClass, transform);
 
 	Terrain->CreateLanes(noise);
 
-	location = FVector{ LBackgroundXPos,0,0 };
-	transform.SetLocation(location);
+	spawnlocation = FVector{ LBackgroundXPos,location.Y,0 };
+	transform.SetLocation(spawnlocation);
 
 	LBackTerrain = GetWorld()->SpawnActor<ABackTerrain>(BackTerrainClass, transform);
 	LBackTerrain->CreateTerrain(noise);
 
-	location = FVector{ RBackgroundXPos,0,0 };
-	transform.SetLocation(location);
+	spawnlocation = FVector{ RBackgroundXPos,location.Y,0 };
+	transform.SetLocation(spawnlocation);
 
 	RBackTerrain = GetWorld()->SpawnActor<ABackTerrain>(BackTerrainClass, transform);
 	RBackTerrain->CreateTerrain(noise);

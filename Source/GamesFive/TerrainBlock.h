@@ -18,7 +18,6 @@ class GAMESFIVE_API ATerrainBlock : public AActor
 public:	
 	// Sets default values for this actor's properties
 	ATerrainBlock();
-
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -26,6 +25,7 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+	//virtual void BeginDestroy() override;
 
 	UPROPERTY(VisibleAnywhere)
 		ATerrain* Terrain;
@@ -37,7 +37,7 @@ public:
 		ABackTerrain* RBackTerrain;
 
 	float LBackgroundXPos = 1230;
-	float RBackgroundXPos = -1470;
+	float RBackgroundXPos = -840;
 
 
 	UPROPERTY(EditAnywhere)
@@ -45,5 +45,5 @@ public:
 	UPROPERTY(EditAnywhere)
 		TSubclassOf<ABackTerrain> BackTerrainClass;
 
-	void PlaceBlocks(FastNoise* noise);
+	void PlaceBlocks(FastNoise* noise, FVector location);
 };

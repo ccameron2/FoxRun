@@ -4,7 +4,7 @@
 
 #include "ResourcePickup.h"
 #include "TerrainBlock.h"
-
+#include "ThirdPersonCharacter.h"
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
 #include "GamesFiveGameModeBase.generated.h"
@@ -17,10 +17,11 @@ UCLASS()
 class GAMESFIVE_API AGamesFiveGameModeBase : public AGameModeBase
 {
 	GENERATED_BODY()
-
+public:
+		AGamesFiveGameModeBase();
 protected:
 	virtual void StartPlay() override;
-
+	virtual void Tick(float DeltaSeconds) override;
 private:
 	UPROPERTY(VisibleAnywhere)
 		TArray<ATerrainBlock*> TerrainBlocks;
@@ -31,6 +32,9 @@ private:
 	UPROPERTY(EditAnywhere)
 		TSubclassOf<AResourcePickup> HealthClass;
 
+	AThirdPersonCharacter* PlayerCharacter;
+	FastNoise Noise;
 	int Seed = 0;
-
+	bool Generated = false;
+	int BlockIndex;
 };

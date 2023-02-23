@@ -55,7 +55,13 @@ public:
 		UProceduralMeshComponent* TerrainMesh;
 
 	UPROPERTY(EditAnywhere)
-		float treeNoiseThreshold = 0.8f;
+		float treeNoiseThreshold = 0.95f;
+
+	UPROPERTY(EditAnywhere)
+		int SizeY = 200;
+
+	int Scale = 30;
+
 private:
 	TArray<FVector> CalculateNormals(TArray<FVector> vertices, TArray<int32> triangles);
 	void PlaceTrees(FastNoise* noise);
@@ -65,10 +71,10 @@ private:
 	UMaterialInterface* DeepGrassMaterial;
 	UMaterialInterface* GravelMaterial;
 
-	int Scale = 30;
+
 	int SizeX = 10;
 	int LaneXOffset = SizeX - 2;
-	int SizeY = 200;
+	
 
 	TArray<UInstancedStaticMeshComponent*> ValleyStaticMeshes;
 };

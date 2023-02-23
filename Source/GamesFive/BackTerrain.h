@@ -32,7 +32,10 @@ public:
 		UProceduralMeshComponent* TerrainMesh;
 
 	UPROPERTY(EditAnywhere)
-		float treeNoiseThreshold = 0.7f;
+		float treeNoiseThreshold = 0.95f;
+
+	UPROPERTY(EditAnywhere)
+		int SizeY = 200;
 
 	void CreateTerrain(FastNoise* noise);
 private:
@@ -49,8 +52,8 @@ private:
 	TArray<FProcMeshTangent> Tangents;
 
 	int Scale = 30;
-	int SizeX = 50;
-	int SizeY = 200;
+	int SizeX = 30;
+	
 
 	TArray<UInstancedStaticMeshComponent*> StaticMeshes;
 
