@@ -5,6 +5,7 @@
 #include <ProceduralMeshComponent.h>
 #include "Components/InstancedStaticMeshComponent.h" 
 #include "External/FastNoise.h"
+#include "Obstacle.h"
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
@@ -19,7 +20,6 @@ enum LaneType
 	Grass,
 	Gravel,
 };
-
 
 struct GeometryData
 {
@@ -42,7 +42,7 @@ public:
 	ATerrain();
 
 	void CreateLanes(FastNoise* noise);
-
+	
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -60,21 +60,36 @@ public:
 	UPROPERTY(EditAnywhere)
 		int SizeY = 200;
 
+	UPROPERTY(EditAnywhere)
+		float obstacleNoiseThreshold = 0.1;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<AObstacle> ObstacleClass;
+
 	int Scale = 30;
 
 private:
 	TArray<FVector> CalculateNormals(TArray<FVector> vertices, TArray<int32> triangles);
 	void PlaceTrees(FastNoise* noise);
+	void PlaceObstacles(FastNoise* noise, int lane);
+	void LoadObstacleModels();
+	void LoadTreeModels();
 	TArray<GeometryData> LaneGeometry;
 
 	UMaterialInterface* GrassMaterial;
 	UMaterialInterface* DeepGrassMaterial;
 	UMaterialInterface* GravelMaterial;
 
+	TArray<UStaticMeshComponent*> GrassMeshes;
+	TArray<UStaticMeshComponent*> RoadMeshes;
+	TArray<UStaticMeshComponent*> WaterMeshes;
+
+	TArray<AObstacle*> GrassObstacles;
+	TArray<AObstacle*> RoadObstacles;
+	TArray<AObstacle*> WaterObstacles;
 
 	int SizeX = 10;
 	int LaneXOffset = SizeX - 2;
 	
-
 	TArray<UInstancedStaticMeshComponent*> ValleyStaticMeshes;
 };

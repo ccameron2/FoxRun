@@ -41,11 +41,16 @@ void AGamesFiveGameModeBase::StartPlay()
 
 void AGamesFiveGameModeBase::Tick(float DeltaSeconds)
 {
+
+	if (GenTimerActive) { return; }
+
 	auto modLocation = int(PlayerCharacter->GetActorLocation().Y / TerrainBlocks[0]->Terrain->Scale) % (TerrainBlocks[0]->Terrain->SizeY) / 2;
 	if (modLocation == 0)
 	{
 		if (TerrainBlocks.Num() < 4)
 		{
+			GenTimerActive = true;
+			GetWorld()->GetTimerManager().SetTimer(GenTimerHandle, this, &AGamesFiveGameModeBase::GenTimerEnd, 3.0f, false);
 			FVector location = FVector{ 0,float(TerrainBlocks[0]->Terrain->SizeY * TerrainBlocks[0]->Terrain->Scale * BlockIndex) - (30 * BlockIndex),0 };
 			FVector scale = FVector(1, 1, 1);
 			FTransform transform;
@@ -66,4 +71,10 @@ void AGamesFiveGameModeBase::Tick(float DeltaSeconds)
 			TerrainBlocks.RemoveAt(0);		
 		}
 	}
+}
+
+void AGamesFiveGameModeBase::GenTimerEnd()
+{
+	PlayerCharacter->AddScore(100);
+	GenTimerActive = false;
 }

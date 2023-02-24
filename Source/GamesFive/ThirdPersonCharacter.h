@@ -6,7 +6,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "ResourcePickup.h"
-
+#include "Obstacle.h"
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "ThirdPersonCharacter.generated.h"
@@ -50,82 +50,28 @@ public:
 	UPROPERTY(EditAnywhere)
 		float RotationSpeed = 500.0f;
 
-	UPROPERTY(EditAnywhere)
-		float MaxHealth = 100.0f;
-
-	UPROPERTY(EditAnywhere)
-		float MaxEnergy = 100.0f;
-
-	UPROPERTY(EditAnywhere)
-		float MaxExp = 100.0f;
-
-	UPROPERTY(EditAnywhere)
-		float MaxMana = 100.0f;
-
-	UPROPERTY(EditAnywhere)
-		float MaxGold = 100.0f;
-
 	UFUNCTION(BlueprintCallable)
 		float GetMaxHealth() { return MaxHealth; }
-
-	UFUNCTION(BlueprintCallable)
-		float GetMaxEnergy() { return MaxEnergy; }
-
-	UFUNCTION(BlueprintCallable)
-		float GetMaxMana() { return MaxMana; }
-
-	UFUNCTION(BlueprintCallable)
-		float GetMaxGold() { return MaxGold; }
-
-	UFUNCTION(BlueprintCallable)
-		float GetMaxExperience() { return MaxExp; }
 
 	UFUNCTION(BlueprintCallable)
 		float GetHealth() { return HealthPoints; }
 
 	UFUNCTION(BlueprintCallable)
-		float GetEnergy() { return Energy; }
+		float GetScore() { return Score; }
 
-	UFUNCTION(BlueprintCallable)
-		float GetMana() { return Mana; }
-
-	UFUNCTION(BlueprintCallable)
-		float GetGold() { return Gold; }
-
-	UFUNCTION(BlueprintCallable)
-		float GetExperience() { return ExpPoints; }
-
-	UFUNCTION(BlueprintCallable)
-		float GetLives() { return Lives; }
-
-	UFUNCTION(BlueprintCallable)
-		float GetPlayerLevel() { return Level; }
-
-	UFUNCTION(BlueprintCallable)
-		void LevelUp();
+	UFUNCTION()
+		void AddScore(int amount);
 
 private:
+	UPROPERTY(EditAnywhere)
+		float MaxHealth = 100.0f;
 
 	UPROPERTY(VisibleAnywhere)
 		float HealthPoints = MaxHealth;
 
 	UPROPERTY(VisibleAnywhere)
-		float ExpPoints = 0.0f;
+		float Score = 0.0f;
 
-	UPROPERTY(VisibleAnywhere)
-		float Energy = MaxEnergy;
-
-	UPROPERTY(VisibleAnywhere)
-		float Gold = 0.0f;
-
-	UPROPERTY(VisibleAnywhere)
-		float Mana = MaxMana;
-
-	UPROPERTY(VisibleAnywhere)
-		int Level = 1;
-
-	UPROPERTY(VisibleAnywhere)
-		int Lives = 1;
 
 	UFUNCTION()
 		virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;

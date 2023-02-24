@@ -49,8 +49,6 @@ void AThirdPersonCharacter::BeginPlay()
 void AThirdPersonCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	if(Energy < MaxEnergy){ Energy++; }
-	if (ExpPoints >= MaxExp) { LevelUp(); }
 	MoveForward(1);
 }
 
@@ -113,11 +111,6 @@ void AThirdPersonCharacter::Jump()
 {
 	Super::Jump();
 	auto MovementComponent = GetMovementComponent();
-
-	if (Energy > 50 && !MovementComponent->IsFalling())
-	{
-		Energy -= 75;
-	}	
 }
 
 void AThirdPersonCharacter::SwapCamera()
@@ -131,14 +124,9 @@ void AThirdPersonCharacter::ToggleSprint()
 	Walking = !Walking;
 }
 
-void AThirdPersonCharacter::LevelUp()
+void AThirdPersonCharacter::AddScore(int amount)
 {
-	Level++; 
-	ExpPoints = 0.0f; 
-	MaxExp += 5;
-	MaxHealth += 5;
-	MaxMana += 5;
-	MaxEnergy += 5;
+	Score += amount;
 }
 
 float AThirdPersonCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
@@ -157,11 +145,11 @@ void AThirdPersonCharacter::OnOverlapBegin(class UPrimitiveComponent* Overlapped
 		if (resourcePickup)
 		{
 			if (resourcePickup->Type == 0) { if(HealthPoints < MaxHealth ){ HealthPoints++; }}
-			if (resourcePickup->Type == 1) { if(Mana		 < MaxMana	 ){ Mana++; }}
-			if (resourcePickup->Type == 2) { if(Energy		 < MaxEnergy ){ Energy++; }}
-			if (resourcePickup->Type == 3) { if(ExpPoints	 < MaxExp	 ){ ExpPoints++; }}
-			if (resourcePickup->Type == 4) { if(Gold		 < MaxGold	 ){ Gold++; }}
-
+		}
+		AObstacle* obstacle = Cast<AObstacle>(OtherActor);
+		if (obstacle)
+		{
+			HealthPoints -= 20;
 		}
 		OtherActor->Destroy();
 	}

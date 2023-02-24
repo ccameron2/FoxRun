@@ -34,6 +34,11 @@ private:
 
 	AThirdPersonCharacter* PlayerCharacter;
 	FastNoise Noise;
+	
+	FTimerHandle GenTimerHandle;
+	bool GenTimerActive;
+	void GenTimerEnd();
+
 	int Seed = 0;
 	bool Generated = false;
 	int BlockIndex;

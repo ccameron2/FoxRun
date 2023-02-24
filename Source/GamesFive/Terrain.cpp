@@ -18,18 +18,8 @@ ATerrain::ATerrain()
 	ConstructorHelpers::FObjectFinder<UMaterialInstance> gravelMaterial(TEXT("M_Terrain_Gravel'/Game/Materials/M_Terrain_Gravel.M_Terrain_Gravel'"));
 	GravelMaterial = gravelMaterial.Object;
 
-	ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset1(TEXT("StaticMesh'/Game/Models/Nature/CommonTree_2'"));
-	ValleyStaticMeshes.Push(CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Tree1 Static Mesh")));
-	ValleyStaticMeshes[0]->SetStaticMesh(MeshAsset1.Object);
-	ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset2(TEXT("StaticMesh'/Game/Models/Nature/PineTree_5'"));
-	ValleyStaticMeshes.Push(CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Tree2 Static Mesh")));
-	ValleyStaticMeshes[1]->SetStaticMesh(MeshAsset2.Object);
-	ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset3(TEXT("StaticMesh'/Game/Models/Nature/CommonTree_5'"));
-	ValleyStaticMeshes.Push(CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Tree3 Static Mesh")));
-	ValleyStaticMeshes[2]->SetStaticMesh(MeshAsset3.Object);
-	ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset4(TEXT("StaticMesh'/Game/Models/Nature/CommonTree_4'"));
-	ValleyStaticMeshes.Push(CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Tree4 Static Mesh")));
-	ValleyStaticMeshes[3]->SetStaticMesh(MeshAsset4.Object);
+	LoadTreeModels();
+	LoadObstacleModels();
 }
 
 void ATerrain::CreateLanes(FastNoise* noise)
@@ -95,6 +85,7 @@ void ATerrain::CreateLanes(FastNoise* noise)
 		else if (laneGeo.Lane == Gravel) TerrainMesh->SetMaterial(i, GravelMaterial);
 		else if(laneGeo.Lane == Grass) TerrainMesh->SetMaterial(i, GrassMaterial);
 		LaneGeometry.Push(laneGeo);
+		PlaceObstacles(noise,i);
 	}
 	PlaceTrees(noise);
 }
@@ -171,4 +162,72 @@ void ATerrain::PlaceTrees(FastNoise* noise)
 			}
 		}
 	}
+}
+
+void ATerrain::PlaceObstacles(FastNoise* noise, int lane)
+{
+	if (lane == 0 || lane == 4) { return; }
+
+	auto meshes = GrassMeshes;
+
+	for (auto& vertex : LaneGeometry[lane].Vertices)
+	{
+		float obstacleNoise = noise->GetNoise((vertex.X + GetActorLocation().X) / 300, (vertex.Y + GetActorLocation().Y) / 300);
+
+		if (obstacleNoise > obstacleNoiseThreshold)
+		{
+			int meshNum = FMath::RandRange(0, meshes.Num() - 1);
+
+			// Set location to vertex position and scale randomly
+			FTransform transform;
+			transform.SetLocation(vertex + GetActorLocation());
+			FQuat Rotation = FVector{ 0,0,0 }.ToOrientationQuat();
+			transform.SetRotation(Rotation);
+			transform.SetScale3D(FVector{ float(FMath::RandRange(0.8,1.2)) });
+
+			// Add instance of mesh in world with collision disabled
+			auto staticMesh = meshes[meshNum];
+			staticMesh->SetCollisionEnabled(ECollisionEnabled::Type::NoCollision);
+			auto newObstacle = GetWorld()->SpawnActor<AObstacle>(ObstacleClass, transform);
+			newObstacle->StaticMesh = staticMesh;
+			GrassObstacles.Push(newObstacle);
+		}
+	}
+}
+
+void ATerrain::LoadObstacleModels()
+{
+	// Load asset and store in object
+	ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset1(TEXT("StaticMesh'/Game/Models/Nature/Bush_1'"));
+	ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset2(TEXT("StaticMesh'/Game/Models/Nature/Rock_2'"));
+	ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset3(TEXT("StaticMesh'/Game/Models/Nature/WoodLog'"));
+	ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset4(TEXT("StaticMesh'/Game/Models/Nature/TreeStump'"));
+
+	// Create new instanced SMC and push into vector
+	GrassMeshes.Push(CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Bush Static Mesh")));
+	GrassMeshes.Push(CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Rock Static Mesh")));
+	GrassMeshes.Push(CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Log Static Mesh")));
+	GrassMeshes.Push(CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Stump Static Mesh")));
+
+	// Pull mesh object from objectfinder and set to object created above
+	GrassMeshes[0]->SetStaticMesh(MeshAsset1.Object);
+	GrassMeshes[1]->SetStaticMesh(MeshAsset2.Object);
+	GrassMeshes[2]->SetStaticMesh(MeshAsset3.Object);
+	GrassMeshes[3]->SetStaticMesh(MeshAsset4.Object);
+}
+
+void ATerrain::LoadTreeModels()
+{
+	ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset1(TEXT("StaticMesh'/Game/Models/Nature/CommonTree_2'"));
+	ValleyStaticMeshes.Push(CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Tree1 Static Mesh")));
+	ValleyStaticMeshes[0]->SetStaticMesh(MeshAsset1.Object);
+	ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset2(TEXT("StaticMesh'/Game/Models/Nature/PineTree_5'"));
+	ValleyStaticMeshes.Push(CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Tree2 Static Mesh")));
+	ValleyStaticMeshes[1]->SetStaticMesh(MeshAsset2.Object);
+	ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset3(TEXT("StaticMesh'/Game/Models/Nature/CommonTree_5'"));
+	ValleyStaticMeshes.Push(CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Tree3 Static Mesh")));
+	ValleyStaticMeshes[2]->SetStaticMesh(MeshAsset3.Object);
+	ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset4(TEXT("StaticMesh'/Game/Models/Nature/CommonTree_4'"));
+	ValleyStaticMeshes.Push(CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Tree4 Static Mesh")));
+	ValleyStaticMeshes[3]->SetStaticMesh(MeshAsset4.Object);
 }
