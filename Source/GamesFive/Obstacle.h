@@ -26,6 +26,6 @@ public:
 	void LoadModels(int type);
 
 	UPROPERTY(VisibleAnywhere)
-		UStaticMeshComponent* StaticMesh;;
+		UInstancedStaticMeshComponent* StaticMesh;;
 
 };

@@ -61,7 +61,7 @@ public:
 		int SizeY = 200;
 
 	UPROPERTY(EditAnywhere)
-		float obstacleNoiseThreshold = 0.1;
+		float obstacleNoiseThreshold = 0.7f;
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<AObstacle> ObstacleClass;
@@ -80,9 +80,9 @@ private:
 	UMaterialInterface* DeepGrassMaterial;
 	UMaterialInterface* GravelMaterial;
 
-	TArray<UStaticMeshComponent*> GrassMeshes;
-	TArray<UStaticMeshComponent*> RoadMeshes;
-	TArray<UStaticMeshComponent*> WaterMeshes;
+	TArray<UInstancedStaticMeshComponent*> GrassMeshes;
+	TArray<UInstancedStaticMeshComponent*> RoadMeshes;
+	TArray<UInstancedStaticMeshComponent*> WaterMeshes;
 
 	TArray<AObstacle*> GrassObstacles;
 	TArray<AObstacle*> RoadObstacles;

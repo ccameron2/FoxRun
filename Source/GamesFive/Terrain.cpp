@@ -172,7 +172,7 @@ void ATerrain::PlaceObstacles(FastNoise* noise, int lane)
 
 	for (auto& vertex : LaneGeometry[lane].Vertices)
 	{
-		float obstacleNoise = noise->GetNoise((vertex.X + GetActorLocation().X) / 300, (vertex.Y + GetActorLocation().Y) / 300);
+		float obstacleNoise = noise->GetNoise((vertex.X + GetActorLocation().X), (vertex.Y + GetActorLocation().Y));
 
 		if (obstacleNoise > obstacleNoiseThreshold)
 		{
@@ -188,6 +188,8 @@ void ATerrain::PlaceObstacles(FastNoise* noise, int lane)
 			// Add instance of mesh in world with collision disabled
 			auto staticMesh = meshes[meshNum];
 			staticMesh->SetCollisionEnabled(ECollisionEnabled::Type::NoCollision);
+			if(staticMesh) staticMesh->AddInstance(transform);
+
 			auto newObstacle = GetWorld()->SpawnActor<AObstacle>(ObstacleClass, transform);
 			newObstacle->StaticMesh = staticMesh;
 			GrassObstacles.Push(newObstacle);
@@ -204,10 +206,10 @@ void ATerrain::LoadObstacleModels()
 	ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset4(TEXT("StaticMesh'/Game/Models/Nature/TreeStump'"));
 
 	// Create new instanced SMC and push into vector
-	GrassMeshes.Push(CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Bush Static Mesh")));
-	GrassMeshes.Push(CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Rock Static Mesh")));
-	GrassMeshes.Push(CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Log Static Mesh")));
-	GrassMeshes.Push(CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Stump Static Mesh")));
+	GrassMeshes.Push(CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Bush Static Mesh")));
+	GrassMeshes.Push(CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Rock Static Mesh")));
+	GrassMeshes.Push(CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Log Static Mesh")));
+	GrassMeshes.Push(CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Stump Static Mesh")));
 
 	// Pull mesh object from objectfinder and set to object created above
 	GrassMeshes[0]->SetStaticMesh(MeshAsset1.Object);
