@@ -23,9 +23,7 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	void LoadModels(int type);
-
 	UPROPERTY(VisibleAnywhere)
-		UInstancedStaticMeshComponent* StaticMesh;;
+		UStaticMeshComponent* StaticMesh;
 
 };

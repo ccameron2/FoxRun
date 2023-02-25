@@ -30,9 +30,6 @@ AThirdPersonCharacter::AThirdPersonCharacter()
 	FirstPersonCamera->SetRelativeLocation(FVector{ 0,10,0 });
 	FirstPersonCamera->bUsePawnControlRotation = true;
 
-	GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &AThirdPersonCharacter::OnOverlapBegin);
-	GetCapsuleComponent()->OnComponentEndOverlap.AddDynamic(this, &AThirdPersonCharacter::OnOverlapEnd);
-
 	//Possess player 0
 	AutoPossessPlayer = EAutoReceiveInput::Player0;
 }
@@ -41,6 +38,8 @@ AThirdPersonCharacter::AThirdPersonCharacter()
 void AThirdPersonCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+	GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &AThirdPersonCharacter::OnOverlapBegin);
+	GetCapsuleComponent()->OnComponentEndOverlap.AddDynamic(this, &AThirdPersonCharacter::OnOverlapEnd);
 	ThirdPersonCamera->SetActive(true);
 	FirstPersonCamera->SetActive(false);
 }
@@ -50,6 +49,10 @@ void AThirdPersonCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	MoveForward(1);
+	if (HealthPoints <= 0)
+	{
+		Destroy();
+	}
 }
 
 // Called to bind functionality to input
@@ -138,15 +141,16 @@ float AThirdPersonCharacter::TakeDamage(float DamageAmount, FDamageEvent const& 
 
 void AThirdPersonCharacter::OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Overlap Begin"));
+
 	if (OtherActor && (OtherActor != this) && OtherComp)
 	{
-		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Overlap Begin"));
 		AResourcePickup* resourcePickup = Cast<AResourcePickup>(OtherActor);
 		if (resourcePickup)
 		{
 			if (resourcePickup->Type == 0) { if(HealthPoints < MaxHealth ){ HealthPoints++; }}
 		}
-		AObstacle* obstacle = Cast<AObstacle>(OtherActor);
+		auto obstacle = Cast<AObstacle>(OtherActor);
 		if (obstacle)
 		{
 			HealthPoints -= 20;

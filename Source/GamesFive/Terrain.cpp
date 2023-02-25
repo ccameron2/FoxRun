@@ -90,6 +90,24 @@ void ATerrain::CreateLanes(FastNoise* noise)
 	PlaceTrees(noise);
 }
 
+void ATerrain::Destroyed()
+{
+	Super::Destroyed();
+
+	for (auto& obstacle : GrassObstacles)
+	{
+		obstacle->Destroy();
+	}
+	for (auto& obstacle : RoadObstacles)
+	{
+		obstacle->Destroy();
+	}
+	for (auto& obstacle : WaterObstacles)
+	{
+		obstacle->Destroy();
+	}
+}
+
 // Called when the game starts or when spawned
 void ATerrain::BeginPlay()
 {
@@ -170,9 +188,9 @@ void ATerrain::PlaceObstacles(FastNoise* noise, int lane)
 
 	auto meshes = GrassMeshes;
 
-	for (auto& vertex : LaneGeometry[lane].Vertices)
+	for (int i = 0; i < LaneGeometry[lane].Vertices.Num(); i+=3)
 	{
-		float obstacleNoise = noise->GetNoise((vertex.X + GetActorLocation().X), (vertex.Y + GetActorLocation().Y));
+		float obstacleNoise = noise->GetNoise((LaneGeometry[lane].Vertices[i].X + GetActorLocation().X), (LaneGeometry[lane].Vertices[i].Y + GetActorLocation().Y));
 
 		if (obstacleNoise > obstacleNoiseThreshold)
 		{
@@ -180,18 +198,16 @@ void ATerrain::PlaceObstacles(FastNoise* noise, int lane)
 
 			// Set location to vertex position and scale randomly
 			FTransform transform;
-			transform.SetLocation(vertex + GetActorLocation());
-			FQuat Rotation = FVector{ 0,0,0 }.ToOrientationQuat();
-			transform.SetRotation(Rotation);
-			transform.SetScale3D(FVector{ float(FMath::RandRange(0.8,1.2)) });
+			transform.SetLocation(LaneGeometry[lane].Vertices[i] + GetActorLocation());
+			FQuat rotation = FVector{ 0,0,0 }.ToOrientationQuat();		
+			FVector scale = FVector{ float(FMath::RandRange(0.8, 1.2)) };
 
-			// Add instance of mesh in world with collision disabled
 			auto staticMesh = meshes[meshNum];
-			staticMesh->SetCollisionEnabled(ECollisionEnabled::Type::NoCollision);
-			if(staticMesh) staticMesh->AddInstance(transform);
-
+			if (meshNum == 1 || meshNum == 2) scale = { 2,2,2 };
+			transform.SetScale3D(scale);
+			transform.SetRotation(rotation);
 			auto newObstacle = GetWorld()->SpawnActor<AObstacle>(ObstacleClass, transform);
-			newObstacle->StaticMesh = staticMesh;
+			newObstacle->StaticMesh->SetStaticMesh(staticMesh);
 			GrassObstacles.Push(newObstacle);
 		}
 	}
@@ -202,20 +218,14 @@ void ATerrain::LoadObstacleModels()
 	// Load asset and store in object
 	ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset1(TEXT("StaticMesh'/Game/Models/Nature/Bush_1'"));
 	ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset2(TEXT("StaticMesh'/Game/Models/Nature/Rock_2'"));
-	ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset3(TEXT("StaticMesh'/Game/Models/Nature/WoodLog'"));
+	ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset3(TEXT("StaticMesh'/Game/Models/Nature/Rock_Moss_2'"));
 	ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset4(TEXT("StaticMesh'/Game/Models/Nature/TreeStump'"));
 
 	// Create new instanced SMC and push into vector
-	GrassMeshes.Push(CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Bush Static Mesh")));
-	GrassMeshes.Push(CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Rock Static Mesh")));
-	GrassMeshes.Push(CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Log Static Mesh")));
-	GrassMeshes.Push(CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Stump Static Mesh")));
-
-	// Pull mesh object from objectfinder and set to object created above
-	GrassMeshes[0]->SetStaticMesh(MeshAsset1.Object);
-	GrassMeshes[1]->SetStaticMesh(MeshAsset2.Object);
-	GrassMeshes[2]->SetStaticMesh(MeshAsset3.Object);
-	GrassMeshes[3]->SetStaticMesh(MeshAsset4.Object);
+	GrassMeshes.Push(MeshAsset1.Object);
+	GrassMeshes.Push(MeshAsset2.Object);
+	GrassMeshes.Push(MeshAsset3.Object);
+	GrassMeshes.Push(MeshAsset4.Object);
 }
 
 void ATerrain::LoadTreeModels()

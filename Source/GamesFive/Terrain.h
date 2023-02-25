@@ -68,6 +68,8 @@ public:
 
 	int Scale = 30;
 
+	void Destroyed() override;
+
 private:
 	TArray<FVector> CalculateNormals(TArray<FVector> vertices, TArray<int32> triangles);
 	void PlaceTrees(FastNoise* noise);
@@ -80,9 +82,9 @@ private:
 	UMaterialInterface* DeepGrassMaterial;
 	UMaterialInterface* GravelMaterial;
 
-	TArray<UInstancedStaticMeshComponent*> GrassMeshes;
-	TArray<UInstancedStaticMeshComponent*> RoadMeshes;
-	TArray<UInstancedStaticMeshComponent*> WaterMeshes;
+	TArray<UStaticMesh*> GrassMeshes;
+	TArray<UStaticMesh*> RoadMeshes;
+	TArray<UStaticMesh*> WaterMeshes;
 
 	TArray<AObstacle*> GrassObstacles;
 	TArray<AObstacle*> RoadObstacles;
