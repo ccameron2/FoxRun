@@ -34,8 +34,9 @@ private:
 
 	AThirdPersonCharacter* PlayerCharacter;
 	FastNoise Noise;
-
+	FVector LastPlayerLocation;
 	int Seed = 0;
 	bool Generated = false;
 	int BlockIndex;
+	bool FirstTick = true;
 };

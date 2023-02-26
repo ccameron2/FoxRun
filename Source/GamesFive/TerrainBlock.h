@@ -45,5 +45,5 @@ public:
 	UPROPERTY(EditAnywhere)
 		TSubclassOf<ABackTerrain> BackTerrainClass;
 
-	void PlaceBlocks(FastNoise* noise, FVector location);
+	void PlaceBlocks(FastNoise* noise, FVector location, float obsNoiseThresIncr = 0);
 };

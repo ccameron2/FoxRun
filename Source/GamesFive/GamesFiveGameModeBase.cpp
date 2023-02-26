@@ -1,6 +1,6 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 #include "GamesFiveGameModeBase.h"
-
+#include "GameFramework/CharacterMovementComponent.h"
 #include "External/FastNoise.h"
 
 AGamesFiveGameModeBase::AGamesFiveGameModeBase()
@@ -48,15 +48,22 @@ void AGamesFiveGameModeBase::StartPlay()
 
 void AGamesFiveGameModeBase::Tick(float DeltaSeconds)
 {
-	auto scale = TerrainBlocks[0]->Terrain->Scale;
-	auto sizeY = TerrainBlocks[0]->Terrain->SizeY;
+	// Save player location on first tick (cant be done in startplay as character spawned later)
+	if (FirstTick) { LastPlayerLocation = PlayerCharacter->GetActorLocation(); FirstTick = false; }
+	
+	static auto scale = TerrainBlocks[0]->Terrain->Scale;
+	static auto sizeY = TerrainBlocks[0]->Terrain->SizeY;
+	static int numLanes = TerrainBlocks[0]->Terrain->NumLanes;
+	static int laneSizeX = TerrainBlocks[0]->Terrain->SizeX;
 
+	// Generation
 	if (Generated == false)
 	{	
 		if (PlayerCharacter->GetActorLocation().Y > scale * sizeY * (BlockIndex - 2))
 		{
 			if (TerrainBlocks.Num() < 3)
 			{
+				PlayerCharacter->GetCharacterMovement()->MaxWalkSpeed += 50;
 				PlayerCharacter->AddScore(100);
 				FVector location = FVector{ 0,float(sizeY * scale * BlockIndex) - (30 * BlockIndex),0 };
 				FVector terrainscale = FVector(1, 1, 1);
@@ -65,7 +72,7 @@ void AGamesFiveGameModeBase::Tick(float DeltaSeconds)
 				transform.SetTranslation(location);
 
 				auto terrainBlock = GetWorld()->SpawnActor<ATerrainBlock>(TerrainBlockClass, transform);
-				terrainBlock->PlaceBlocks(&Noise, location);
+				terrainBlock->PlaceBlocks(&Noise, location, BlockIndex / 100);
 				TerrainBlocks.Push(terrainBlock);
 				BlockIndex++;
 				Generated = true;
@@ -88,4 +95,16 @@ void AGamesFiveGameModeBase::Tick(float DeltaSeconds)
 		}
 	}
 	
+	// Keep player within the lanes
+	if (PlayerCharacter->GetActorLocation().X > ((numLanes - 2) * (laneSizeX * scale)) + 0.5 * laneSizeX * scale)
+	{
+		LastPlayerLocation += FVector{ float(-scale),0,0 };
+		PlayerCharacter->SetActorLocation(LastPlayerLocation);
+	}
+	else if (PlayerCharacter->GetActorLocation().X < (laneSizeX * scale))
+	{
+		LastPlayerLocation += FVector{ float(scale),0,0};
+		PlayerCharacter->SetActorLocation(LastPlayerLocation);
+	}
+	LastPlayerLocation = PlayerCharacter->GetActorLocation();
 }

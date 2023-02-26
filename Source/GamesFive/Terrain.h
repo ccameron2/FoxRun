@@ -61,13 +61,14 @@ public:
 		int SizeY = 200;
 
 	UPROPERTY(EditAnywhere)
-		float obstacleNoiseThreshold = 0.7f;
+		float obstacleNoiseThreshold = 0.6f;
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<AObstacle> ObstacleClass;
 
 	int Scale = 30;
-
+	int SizeX = 10;
+	int NumLanes = 5;
 	void Destroyed() override;
 
 private:
@@ -90,7 +91,6 @@ private:
 	TArray<AObstacle*> RoadObstacles;
 	TArray<AObstacle*> WaterObstacles;
 
-	int SizeX = 10;
 	int LaneXOffset = SizeX - 2;
 	
 	TArray<UInstancedStaticMeshComponent*> ValleyStaticMeshes;

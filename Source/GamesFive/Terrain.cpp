@@ -24,7 +24,7 @@ ATerrain::ATerrain()
 
 void ATerrain::CreateLanes(FastNoise* noise)
 {
-	for (int i = 0; i < 5; i++)
+	for (int i = 0; i < NumLanes; i++)
 	{
 		GeometryData laneGeo;
 
@@ -188,22 +188,24 @@ void ATerrain::PlaceObstacles(FastNoise* noise, int lane)
 
 	auto meshes = GrassMeshes;
 
-	for (int i = 0; i < LaneGeometry[lane].Vertices.Num(); i+=3)
+	for (int i = 0; i < LaneGeometry[lane].Vertices.Num(); i += 8)
 	{
-		float obstacleNoise = noise->GetNoise((LaneGeometry[lane].Vertices[i].X + GetActorLocation().X), (LaneGeometry[lane].Vertices[i].Y + GetActorLocation().Y));
-
+		auto vertex = LaneGeometry[lane].Vertices[i];
+		if (vertex.X == i * SizeX * Scale || vertex.X == i - 1 * SizeX * Scale) continue;
+		float obstacleNoise = noise->GetNoise((vertex.X + GetActorLocation().X), (vertex.Y + GetActorLocation().Y));
 		if (obstacleNoise > obstacleNoiseThreshold)
 		{
 			int meshNum = FMath::RandRange(0, meshes.Num() - 1);
 
 			// Set location to vertex position and scale randomly
 			FTransform transform;
-			transform.SetLocation(LaneGeometry[lane].Vertices[i] + GetActorLocation());
+			transform.SetLocation(vertex + GetActorLocation());
 			FQuat rotation = FVector{ 0,0,0 }.ToOrientationQuat();		
 			FVector scale = FVector{ float(FMath::RandRange(0.8, 1.2)) };
 
 			auto staticMesh = meshes[meshNum];
 			if (meshNum == 1 || meshNum == 2) scale = { 2,2,2 };
+			if (meshNum == 4) scale = { 2.5f,2.5f,2.5f };
 			transform.SetScale3D(scale);
 			transform.SetRotation(rotation);
 			auto newObstacle = GetWorld()->SpawnActor<AObstacle>(ObstacleClass, transform);
@@ -220,12 +222,14 @@ void ATerrain::LoadObstacleModels()
 	ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset2(TEXT("StaticMesh'/Game/Models/Nature/Rock_2'"));
 	ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset3(TEXT("StaticMesh'/Game/Models/Nature/Rock_Moss_2'"));
 	ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset4(TEXT("StaticMesh'/Game/Models/Nature/TreeStump'"));
+	ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset5(TEXT("StaticMesh'/Game/Models/Crops/Mushroom_3'"));
 
 	// Create new instanced SMC and push into vector
 	GrassMeshes.Push(MeshAsset1.Object);
 	GrassMeshes.Push(MeshAsset2.Object);
 	GrassMeshes.Push(MeshAsset3.Object);
 	GrassMeshes.Push(MeshAsset4.Object);
+	GrassMeshes.Push(MeshAsset5.Object);
 }
 
 void ATerrain::LoadTreeModels()

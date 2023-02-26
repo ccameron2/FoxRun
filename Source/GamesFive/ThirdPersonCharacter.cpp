@@ -9,6 +9,10 @@ AThirdPersonCharacter::AThirdPersonCharacter()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	CollisionSphere = CreateDefaultSubobject<USphereComponent>(TEXT("Collision Sphere"));
+	CollisionSphere->InitSphereRadius(0.8f);
+	CollisionSphere->SetupAttachment(GetMesh(), "head");
+
 	// Create spring arm and attach to the root component
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("Spring Arm"));
 
@@ -38,8 +42,8 @@ AThirdPersonCharacter::AThirdPersonCharacter()
 void AThirdPersonCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &AThirdPersonCharacter::OnOverlapBegin);
-	GetCapsuleComponent()->OnComponentEndOverlap.AddDynamic(this, &AThirdPersonCharacter::OnOverlapEnd);
+	CollisionSphere->OnComponentBeginOverlap.AddDynamic(this, &AThirdPersonCharacter::OnOverlapBegin);
+	CollisionSphere->OnComponentEndOverlap.AddDynamic(this, &AThirdPersonCharacter::OnOverlapEnd);
 	ThirdPersonCamera->SetActive(true);
 	FirstPersonCamera->SetActive(false);
 }
@@ -112,8 +116,10 @@ void AThirdPersonCharacter::Fire()
 
 void AThirdPersonCharacter::Jump()
 {
+	if (!CanJump) return;
 	Super::Jump();
-	auto MovementComponent = GetMovementComponent();
+	CanJump = false;
+	GetWorld()->GetTimerManager().SetTimer(JumpTimerHandle, this, &AThirdPersonCharacter::JumpTimerEnd, 1.2f);
 }
 
 void AThirdPersonCharacter::SwapCamera()
@@ -165,4 +171,9 @@ void AThirdPersonCharacter::OnOverlapEnd(class UPrimitiveComponent* OverlappedCo
 	{
 		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Overlap End"));
 	}
+}
+
+void AThirdPersonCharacter::JumpTimerEnd()
+{
+	CanJump = true;
 }

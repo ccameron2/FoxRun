@@ -45,7 +45,7 @@ public:
 	bool Walking = false;
 
 	UPROPERTY(EditAnywhere)
-		float MoveSpeed = 200.0f;
+		USphereComponent* CollisionSphere;
 
 	UPROPERTY(EditAnywhere)
 		float RotationSpeed = 500.0f;
@@ -72,7 +72,6 @@ private:
 	UPROPERTY(VisibleAnywhere)
 		float Score = 0.0f;
 
-
 	UFUNCTION()
 		virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
@@ -90,5 +89,9 @@ private:
 
 	UPROPERTY(EditAnywhere)
 		USpringArmComponent* SpringArm;
+
+	void JumpTimerEnd();
+	FTimerHandle JumpTimerHandle;
+	bool CanJump = true;
 
 };
