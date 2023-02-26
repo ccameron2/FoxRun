@@ -88,8 +88,6 @@ private:
 	TArray<UStaticMesh*> WaterMeshes;
 
 	TArray<AObstacle*> GrassObstacles;
-	TArray<AObstacle*> RoadObstacles;
-	TArray<AObstacle*> WaterObstacles;
 
 	int LaneXOffset = SizeX - 2;
 	

@@ -18,15 +18,8 @@ void AThirdPersonPlayerController::SetupInputComponent()
 
 	//Bind inputs to assigned functions
 	InputComponent->BindAxis("Move Forwards", this, &AThirdPersonPlayerController::CallForward);
-	InputComponent->BindAxis("Turn", this, &AThirdPersonPlayerController::CallTurn);
-	InputComponent->BindAction("Fire", EInputEvent::IE_Pressed, this, &AThirdPersonPlayerController::CallFire);
 	InputComponent->BindAxis("Strafe", this, &AThirdPersonPlayerController::CallStrafe);
 	InputComponent->BindAction("Jump", EInputEvent::IE_Pressed, this, &AThirdPersonPlayerController::CallJump);
-	InputComponent->BindAxis("Look Up", this, &AThirdPersonPlayerController::CallLookUp);
-	InputComponent->BindAction("Swap Camera", EInputEvent::IE_Pressed, this, &AThirdPersonPlayerController::CallSwapCamera);
-	InputComponent->BindAction("Sprint", EInputEvent::IE_Pressed, this, &AThirdPersonPlayerController::CallToggleSprint);
-	InputComponent->BindAction("Sprint", EInputEvent::IE_Released, this, &AThirdPersonPlayerController::CallToggleSprint);
-
 }
 
 void AThirdPersonPlayerController::CallForward(float Value)
@@ -35,29 +28,6 @@ void AThirdPersonPlayerController::CallForward(float Value)
 	{
 		PlayerPawn->MoveForward(Value);
 	}
-}
-
-void AThirdPersonPlayerController::CallTurn(float Value)
-{
-	if (PlayerPawn)
-	{
-		PlayerPawn->Turn(Value);
-	}
-}
-
-
-void AThirdPersonPlayerController::CallFire()
-{
-	//if (TimesShot < MaximumAmmo)
-	//{
-		if (PlayerPawn)
-		{
-			//TimesShot++;
-			//ShotsLeft = MaximumAmmo - TimesShot;
-			PlayerPawn->Fire();
-		}
-	//}
-
 }
 
 void AThirdPersonPlayerController::CallStrafe(float Value)
@@ -73,29 +43,5 @@ void AThirdPersonPlayerController::CallJump()
 	if (PlayerPawn)
 	{
 		PlayerPawn->Jump();
-	}
-}
-
-void AThirdPersonPlayerController::CallLookUp(float Value)
-{
-	if (PlayerPawn)
-	{
-		PlayerPawn->LookUp(Value);
-	}
-}
-
-void AThirdPersonPlayerController::CallSwapCamera()
-{
-	if (PlayerPawn)
-	{
-		PlayerPawn->SwapCamera();
-	}
-}
-
-void AThirdPersonPlayerController::CallToggleSprint()
-{
-	if (PlayerPawn)
-	{
-		PlayerPawn->ToggleSprint();
 	}
 }

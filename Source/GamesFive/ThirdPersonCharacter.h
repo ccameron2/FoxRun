@@ -35,12 +35,9 @@ public:
 
 	void MoveForward(float AxisValue);
 	void Strafe(float AxisValue);
-	void Turn(float AxisValue);
 	void LookUp(float AxisValue);
-	void Fire();
 	void Jump();
 	void SwapCamera();
-	void ToggleSprint();
 
 	bool Walking = false;
 
@@ -77,9 +74,6 @@ private:
 
 	UFUNCTION()
 		void OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-
-	UFUNCTION()
-		void OnOverlapEnd(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 	UPROPERTY(EditAnywhere)
 		UCameraComponent* ThirdPersonCamera;

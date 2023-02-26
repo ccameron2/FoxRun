@@ -30,12 +30,7 @@ public:
 private:
 
 	virtual void CallForward(float Value);
-	virtual void CallTurn(float Value);
-	virtual void CallFire();
 	virtual void CallStrafe(float Value);
 	virtual void CallJump();
-	virtual void CallLookUp(float Value);
-	virtual void CallSwapCamera();
-	virtual void CallToggleSprint();
 
 };

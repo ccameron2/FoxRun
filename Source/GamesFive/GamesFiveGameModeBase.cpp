@@ -20,12 +20,10 @@ void AGamesFiveGameModeBase::StartPlay()
 
 	Seed = FMath::RandRange(0, 69420);
 
-
 	Noise.SetNoiseType(FastNoise::SimplexFractal);
 	Noise.SetSeed(Seed);
 
 	PlayerCharacter = Cast<AThirdPersonCharacter>(GetWorld()->GetFirstPlayerController()->GetCharacter());
-
 	TerrainBlocks.Push(GetWorld()->SpawnActor<ATerrainBlock>(TerrainBlockClass, transform));
 	TerrainBlocks[0]->PlaceBlocks(&Noise,location);
 	BlockIndex++;
@@ -59,12 +57,14 @@ void AGamesFiveGameModeBase::Tick(float DeltaSeconds)
 	// Generation
 	if (Generated == false)
 	{	
-		if (PlayerCharacter->GetActorLocation().Y > scale * sizeY * (BlockIndex - 2))
+		if (PlayerCharacter->GetActorLocation().Y > (scale * sizeY * (BlockIndex - 2)) + scale)
 		{
 			if (TerrainBlocks.Num() < 3)
 			{
+				// Increase character speed and increment movement speed
 				PlayerCharacter->GetCharacterMovement()->MaxWalkSpeed += 50;
 				PlayerCharacter->AddScore(100);
+				
 				FVector location = FVector{ 0,float(sizeY * scale * BlockIndex) - (30 * BlockIndex),0 };
 				FVector terrainscale = FVector(1, 1, 1);
 				FTransform transform;

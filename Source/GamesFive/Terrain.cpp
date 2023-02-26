@@ -98,14 +98,6 @@ void ATerrain::Destroyed()
 	{
 		obstacle->Destroy();
 	}
-	for (auto& obstacle : RoadObstacles)
-	{
-		obstacle->Destroy();
-	}
-	for (auto& obstacle : WaterObstacles)
-	{
-		obstacle->Destroy();
-	}
 }
 
 // Called when the game starts or when spawned

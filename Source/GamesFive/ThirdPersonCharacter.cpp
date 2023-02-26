@@ -17,7 +17,7 @@ AThirdPersonCharacter::AThirdPersonCharacter()
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("Spring Arm"));
 
 	// Spring Arm settings
-	SpringArm->TargetArmLength = 300.0f;
+	SpringArm->TargetArmLength = 250.0f;
 	SpringArm->bEnableCameraLag = false;
 	SpringArm->SetRelativeRotation(FRotator(0.0f, 0.0f, 0.0f));
 	SpringArm->SetRelativeLocation(FVector(-361.0f, -305.0f, 113.0f));
@@ -43,7 +43,6 @@ void AThirdPersonCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	CollisionSphere->OnComponentBeginOverlap.AddDynamic(this, &AThirdPersonCharacter::OnOverlapBegin);
-	CollisionSphere->OnComponentEndOverlap.AddDynamic(this, &AThirdPersonCharacter::OnOverlapEnd);
 	ThirdPersonCamera->SetActive(true);
 	FirstPersonCamera->SetActive(false);
 }
@@ -63,7 +62,6 @@ void AThirdPersonCharacter::Tick(float DeltaTime)
 void AThirdPersonCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
 }
 
 void AThirdPersonCharacter::OnConstruction(const FTransform& Transform)
@@ -98,20 +96,10 @@ void AThirdPersonCharacter::Strafe(float AxisValue)
 	}
 }
 
-void AThirdPersonCharacter::Turn(float AxisValue)
-{
-	//Turn character left and right
-	//AddControllerYawInput(AxisValue);
-}
-
 void AThirdPersonCharacter::LookUp(float AxisValue)
 {
 	//Rotate view up and down
 	AddControllerPitchInput(AxisValue);
-}
-
-void AThirdPersonCharacter::Fire()
-{
 }
 
 void AThirdPersonCharacter::Jump()
@@ -126,11 +114,6 @@ void AThirdPersonCharacter::SwapCamera()
 {
 	ThirdPersonCamera->ToggleActive();
 	FirstPersonCamera->ToggleActive();
-}
-
-void AThirdPersonCharacter::ToggleSprint()
-{
-	Walking = !Walking;
 }
 
 void AThirdPersonCharacter::AddScore(int amount)
@@ -162,14 +145,6 @@ void AThirdPersonCharacter::OnOverlapBegin(class UPrimitiveComponent* Overlapped
 			HealthPoints -= 20;
 		}
 		OtherActor->Destroy();
-	}
-}
-
-void AThirdPersonCharacter::OnOverlapEnd(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
-{
-	if (OtherActor && (OtherActor != this) && OtherComp)
-	{
-		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Overlap End"));
 	}
 }
 

@@ -25,13 +25,6 @@ void ATerrainBlock::Tick(float DeltaTime)
 
 }
 
-//void ATerrainBlock::BeginDestroy()
-//{
-//	Terrain->Destroy();
-//	LBackTerrain->Destroy();
-//	RBackTerrain->Destroy();
-//}
-
 void ATerrainBlock::PlaceBlocks(FastNoise* noise, FVector location, float obsNoiseThresIncr)
 {
 	FVector spawnlocation = location;
@@ -41,9 +34,9 @@ void ATerrainBlock::PlaceBlocks(FastNoise* noise, FVector location, float obsNoi
 	transform.SetTranslation(spawnlocation);
 
 	Terrain = GetWorld()->SpawnActor<ATerrain>(TerrainClass, transform);
-	if (Terrain->obstacleNoiseThreshold + obsNoiseThresIncr < 0.4)
+	if (Terrain->obstacleNoiseThreshold - obsNoiseThresIncr > MaxObsThreshold)
 	{
-		Terrain->obstacleNoiseThreshold += obsNoiseThresIncr;
+		Terrain->obstacleNoiseThreshold -= obsNoiseThresIncr;
 	}
 	Terrain->CreateLanes(noise);
 

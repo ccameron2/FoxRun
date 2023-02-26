@@ -29,9 +29,6 @@ private:
 	UPROPERTY(EditAnywhere)
 		TSubclassOf<ATerrainBlock> TerrainBlockClass;
 
-	UPROPERTY(EditAnywhere)
-		TSubclassOf<AResourcePickup> HealthClass;
-
 	AThirdPersonCharacter* PlayerCharacter;
 	FastNoise Noise;
 	FVector LastPlayerLocation;
