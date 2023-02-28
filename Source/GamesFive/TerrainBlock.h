@@ -38,7 +38,7 @@ public:
 
 	float LBackgroundXPos = 1230;
 	float RBackgroundXPos = -840;
-	float MaxObsThreshold = 0.3;
+	float MaxObsThreshold = 0.2;
 
 	UPROPERTY(EditAnywhere)
 		TSubclassOf<ATerrain> TerrainClass;

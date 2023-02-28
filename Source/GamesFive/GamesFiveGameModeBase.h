@@ -34,6 +34,6 @@ private:
 	FVector LastPlayerLocation;
 	int Seed = 0;
 	bool Generated = false;
-	int BlockIndex;
+	int BlockIndex = 0;
 	bool FirstTick = true;
 };

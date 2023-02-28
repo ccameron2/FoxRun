@@ -65,9 +65,9 @@ void ATerrain::CreateLanes(FastNoise* noise)
 			// Get input vector from vertex list and sample noise at different levels
 			auto input = laneGeo.Vertices[j];
 			auto result1 = noise->GetNoise((input.X + GetActorLocation().X) / 300, (input.Y + GetActorLocation().Y) / 300);
-			laneGeo.Vertices[j].Z += result1 * 200;
+			laneGeo.Vertices[j].Z += result1 * 100;
 			auto result2 = noise->GetNoise((input.X + GetActorLocation().X) / 20, (input.Y + GetActorLocation().Y) / 20);
-			laneGeo.Vertices[j].Z += result2 * 100;
+			laneGeo.Vertices[j].Z += result2 * 70;
 
 			// Find the tallest vector and store in variables
 			if (laneGeo.Vertices[j].Z > tallestVectorHeight)
@@ -81,9 +81,9 @@ void ATerrain::CreateLanes(FastNoise* noise)
 
 		TerrainMesh->CreateMeshSection(i, laneGeo.Vertices, laneGeo.Triangles, laneGeo.Normals, laneGeo.UVs, laneGeo.VertexColours, laneGeo.Tangents, true);
 
-		if(laneGeo.Lane == Valley || laneGeo.Lane == Deep)	TerrainMesh->SetMaterial(i, DeepGrassMaterial);
+		if(laneGeo.Lane == Valley || laneGeo.Lane == Deep || laneGeo.Lane == Grass)	TerrainMesh->SetMaterial(i, DeepGrassMaterial);
 		else if (laneGeo.Lane == Gravel) TerrainMesh->SetMaterial(i, GravelMaterial);
-		else if(laneGeo.Lane == Grass) TerrainMesh->SetMaterial(i, GrassMaterial);
+		//else if(laneGeo.Lane == Grass) TerrainMesh->SetMaterial(i, GrassMaterial);
 		LaneGeometry.Push(laneGeo);
 		PlaceObstacles(noise,i);
 	}
@@ -196,11 +196,18 @@ void ATerrain::PlaceObstacles(FastNoise* noise, int lane)
 			FVector scale = FVector{ float(FMath::RandRange(0.8, 1.2)) };
 
 			auto staticMesh = meshes[meshNum];
-			if (meshNum == 1 || meshNum == 2) scale = { 2,2,2 };
-			if (meshNum == 4) scale = { 2.5f,2.5f,2.5f };
+			if (meshNum == 0 || meshNum == 1) scale = FVector{ float(FMath::RandRange(0.6f, 1.1f)) };
+			if (meshNum == 2 || meshNum == 3) scale = FVector{ float(FMath::RandRange(1.0f, 2.5f)) };
+			if (meshNum == 4) scale = FVector{ float(FMath::RandRange(0.8f, 1.0f)) };
+			if (meshNum == 5) scale = FVector{ float(FMath::RandRange(2.5f, 3.0f)) };
+			if (meshNum == 6) scale = FVector{ float(FMath::RandRange(1.0f, 1.5f)) };
 			transform.SetScale3D(scale);
 			transform.SetRotation(rotation);
-			auto newObstacle = GetWorld()->SpawnActor<AObstacle>(ObstacleClass, transform);
+
+			FActorSpawnParameters params;
+			params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::DontSpawnIfColliding;
+
+			auto newObstacle = GetWorld()->SpawnActor<AObstacle>(ObstacleClass,transform, params);
 			newObstacle->StaticMesh->SetStaticMesh(staticMesh);
 			GrassObstacles.Push(newObstacle);
 		}
@@ -211,10 +218,12 @@ void ATerrain::LoadObstacleModels()
 {
 	// Load asset and store in object
 	ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset1(TEXT("StaticMesh'/Game/Models/Nature/Bush_1'"));
-	ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset2(TEXT("StaticMesh'/Game/Models/Nature/Rock_2'"));
-	ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset3(TEXT("StaticMesh'/Game/Models/Nature/Rock_Moss_2'"));
-	ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset4(TEXT("StaticMesh'/Game/Models/Nature/TreeStump'"));
-	ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset5(TEXT("StaticMesh'/Game/Models/Crops/Mushroom_3'"));
+	ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset2(TEXT("StaticMesh'/Game/Models/Nature/BushBerries_1'"));
+	ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset3(TEXT("StaticMesh'/Game/Models/Nature/Rock_2'"));
+	ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset4(TEXT("StaticMesh'/Game/Models/Nature/Rock_Moss_2'"));
+	ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset5(TEXT("StaticMesh'/Game/Models/Nature/TreeStump'"));
+	ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset6(TEXT("StaticMesh'/Game/Models/Crops/Mushroom_3'"));
+	ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset7(TEXT("StaticMesh'/Game/Models/Crops/Pumpkin_Crop'"));
 
 	// Create new instanced SMC and push into vector
 	GrassMeshes.Push(MeshAsset1.Object);
@@ -222,6 +231,8 @@ void ATerrain::LoadObstacleModels()
 	GrassMeshes.Push(MeshAsset3.Object);
 	GrassMeshes.Push(MeshAsset4.Object);
 	GrassMeshes.Push(MeshAsset5.Object);
+	GrassMeshes.Push(MeshAsset6.Object);
+	GrassMeshes.Push(MeshAsset7.Object);
 }
 
 void ATerrain::LoadTreeModels()

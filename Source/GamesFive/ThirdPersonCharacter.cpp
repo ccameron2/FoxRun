@@ -27,13 +27,6 @@ AThirdPersonCharacter::AThirdPersonCharacter()
 	ThirdPersonCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("Third Person Camera"));
 	ThirdPersonCamera->SetupAttachment(SpringArm);
 
-	// Create first person camera
-	FirstPersonCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("First Person Camera"));
-	FirstPersonCamera->SetupAttachment(GetMesh(), "head");
-	FirstPersonCamera->SetRelativeRotation(FRotator(0, 0, 0));
-	FirstPersonCamera->SetRelativeLocation(FVector{ 0,10,0 });
-	FirstPersonCamera->bUsePawnControlRotation = true;
-
 	//Possess player 0
 	AutoPossessPlayer = EAutoReceiveInput::Player0;
 }
@@ -44,7 +37,6 @@ void AThirdPersonCharacter::BeginPlay()
 	Super::BeginPlay();
 	CollisionSphere->OnComponentBeginOverlap.AddDynamic(this, &AThirdPersonCharacter::OnOverlapBegin);
 	ThirdPersonCamera->SetActive(true);
-	FirstPersonCamera->SetActive(false);
 }
 
 // Called every frame
@@ -62,11 +54,6 @@ void AThirdPersonCharacter::Tick(float DeltaTime)
 void AThirdPersonCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
-}
-
-void AThirdPersonCharacter::OnConstruction(const FTransform& Transform)
-{
-	FirstPersonCamera->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, "head");
 }
 
 void AThirdPersonCharacter::MoveForward(float AxisValue)
@@ -113,7 +100,6 @@ void AThirdPersonCharacter::Jump()
 void AThirdPersonCharacter::SwapCamera()
 {
 	ThirdPersonCamera->ToggleActive();
-	FirstPersonCamera->ToggleActive();
 }
 
 void AThirdPersonCharacter::AddScore(int amount)
@@ -130,15 +116,8 @@ float AThirdPersonCharacter::TakeDamage(float DamageAmount, FDamageEvent const& 
 
 void AThirdPersonCharacter::OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Overlap Begin"));
-
 	if (OtherActor && (OtherActor != this) && OtherComp)
 	{
-		AResourcePickup* resourcePickup = Cast<AResourcePickup>(OtherActor);
-		if (resourcePickup)
-		{
-			if (resourcePickup->Type == 0) { if(HealthPoints < MaxHealth ){ HealthPoints++; }}
-		}
 		auto obstacle = Cast<AObstacle>(OtherActor);
 		if (obstacle)
 		{

@@ -69,9 +69,9 @@ void ABackTerrain::CreateTerrain(FastNoise* noise)
 		// Get input vector from vertex list and sample noise at different levels
 		auto input = Vertices[j];
 		auto result1 = noise->GetNoise((input.X + GetActorLocation().X) / 300, (input.Y + GetActorLocation().Y) / 300);
-		Vertices[j].Z += result1 * 200;
+		Vertices[j].Z += result1 * 100;
 		auto result2 = noise->GetNoise((input.X + GetActorLocation().X) / 20, (input.Y + GetActorLocation().Y) / 20);
-		Vertices[j].Z += result2 * 100;
+		Vertices[j].Z += result2 * 70;
 
 		// Find the tallest vector and store in variables
 		if (Vertices[j].Z > tallestVectorHeight)

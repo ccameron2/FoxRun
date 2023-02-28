@@ -31,8 +31,6 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	virtual void OnConstruction(const FTransform& Transform) override;
-
 	void MoveForward(float AxisValue);
 	void Strafe(float AxisValue);
 	void LookUp(float AxisValue);
@@ -77,9 +75,6 @@ private:
 
 	UPROPERTY(EditAnywhere)
 		UCameraComponent* ThirdPersonCamera;
-
-	UPROPERTY(EditAnywhere)
-		UCameraComponent* FirstPersonCamera;
 
 	UPROPERTY(EditAnywhere)
 		USpringArmComponent* SpringArm;

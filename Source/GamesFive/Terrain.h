@@ -6,6 +6,7 @@
 #include "Components/InstancedStaticMeshComponent.h" 
 #include "External/FastNoise.h"
 #include "Obstacle.h"
+#include "Containers/Map.h"
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
@@ -84,8 +85,6 @@ private:
 	UMaterialInterface* GravelMaterial;
 
 	TArray<UStaticMesh*> GrassMeshes;
-	TArray<UStaticMesh*> RoadMeshes;
-	TArray<UStaticMesh*> WaterMeshes;
 
 	TArray<AObstacle*> GrassObstacles;
 

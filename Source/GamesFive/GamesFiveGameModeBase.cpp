@@ -24,24 +24,16 @@ void AGamesFiveGameModeBase::StartPlay()
 	Noise.SetSeed(Seed);
 
 	PlayerCharacter = Cast<AThirdPersonCharacter>(GetWorld()->GetFirstPlayerController()->GetCharacter());
-	TerrainBlocks.Push(GetWorld()->SpawnActor<ATerrainBlock>(TerrainBlockClass, transform));
-	TerrainBlocks[0]->PlaceBlocks(&Noise,location);
-	BlockIndex++;
 
-	location = FVector{ 0,float(TerrainBlocks[0]->Terrain->SizeY * TerrainBlocks[0]->Terrain->Scale * BlockIndex) - (30 * BlockIndex),0 };
-	transform.SetTranslation(location);
+	for (int i = 0; i < 4; i++)
+	{
+		TerrainBlocks.Push(GetWorld()->SpawnActor<ATerrainBlock>(TerrainBlockClass, transform));
+		TerrainBlocks[i]->PlaceBlocks(&Noise, location);
+		BlockIndex++;
 
-	TerrainBlocks.Push(GetWorld()->SpawnActor<ATerrainBlock>(TerrainBlockClass, transform));
-	TerrainBlocks[1]->PlaceBlocks(&Noise, location);
-	BlockIndex++;
-
-	location = FVector{ 0,float(TerrainBlocks[0]->Terrain->SizeY * TerrainBlocks[0]->Terrain->Scale * BlockIndex) - (30 * BlockIndex),0 };
-	transform.SetTranslation(location);
-
-	TerrainBlocks.Push(GetWorld()->SpawnActor<ATerrainBlock>(TerrainBlockClass, transform));
-	TerrainBlocks[2]->PlaceBlocks(&Noise, location);
-	BlockIndex++;
-
+		location = FVector{ 0,float(TerrainBlocks[0]->Terrain->SizeY * TerrainBlocks[0]->Terrain->Scale * BlockIndex) - (30 * BlockIndex),0 };
+		transform.SetTranslation(location);
+	}
 }
 
 void AGamesFiveGameModeBase::Tick(float DeltaSeconds)
@@ -57,12 +49,12 @@ void AGamesFiveGameModeBase::Tick(float DeltaSeconds)
 	// Generation
 	if (Generated == false)
 	{	
-		if (PlayerCharacter->GetActorLocation().Y > (scale * sizeY * (BlockIndex - 2)) + scale)
+		if (PlayerCharacter->GetActorLocation().Y > (scale * sizeY * (BlockIndex - 2)) + (5 * scale))
 		{
-			if (TerrainBlocks.Num() < 3)
+			if (TerrainBlocks.Num() < 4)
 			{
 				// Increase character speed and increment movement speed
-				PlayerCharacter->GetCharacterMovement()->MaxWalkSpeed += 50;
+				PlayerCharacter->GetCharacterMovement()->MaxWalkSpeed += 80;
 				PlayerCharacter->AddScore(100);
 				
 				FVector location = FVector{ 0,float(sizeY * scale * BlockIndex) - (30 * BlockIndex),0 };
@@ -98,12 +90,12 @@ void AGamesFiveGameModeBase::Tick(float DeltaSeconds)
 	// Keep player within the lanes
 	if (PlayerCharacter->GetActorLocation().X > ((numLanes - 2) * (laneSizeX * scale)) + 0.5 * laneSizeX * scale)
 	{
-		LastPlayerLocation += FVector{ float(-scale),0,0 };
+		LastPlayerLocation += FVector{ float(-scale / 2),0,0 };
 		PlayerCharacter->SetActorLocation(LastPlayerLocation);
 	}
 	else if (PlayerCharacter->GetActorLocation().X < (laneSizeX * scale))
 	{
-		LastPlayerLocation += FVector{ float(scale),0,0};
+		LastPlayerLocation += FVector{ float(scale / 2),0,0};
 		PlayerCharacter->SetActorLocation(LastPlayerLocation);
 	}
 	LastPlayerLocation = PlayerCharacter->GetActorLocation();
