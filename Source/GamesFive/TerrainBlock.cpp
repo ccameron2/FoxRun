@@ -27,19 +27,26 @@ void ATerrainBlock::Tick(float DeltaTime)
 
 void ATerrainBlock::PlaceBlocks(FastNoise* noise, FVector location, float obsNoiseThresIncr)
 {
+	// Spawn params
 	FVector spawnlocation = location;
 	FVector scale = FVector(1, 1, 1);
 	FTransform transform;
 	transform.SetScale3D(scale);
 	transform.SetTranslation(spawnlocation);
 
+	// Spawn main terrain
 	Terrain = GetWorld()->SpawnActor<ATerrain>(TerrainClass, transform);
+
+	// Increase amount of obstacles slightly
 	if (Terrain->obstacleNoiseThreshold - obsNoiseThresIncr > MaxObsThreshold)
 	{
 		Terrain->obstacleNoiseThreshold -= obsNoiseThresIncr;
 	}
+	
+	// Generate terrain
 	Terrain->CreateLanes(noise);
 
+	// Spawn background actors and generate terrain
 	spawnlocation = FVector{ LBackgroundXPos,location.Y,0 };
 	transform.SetLocation(spawnlocation);
 

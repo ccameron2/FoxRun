@@ -11,8 +11,6 @@ ATerrain::ATerrain()
 	TerrainMesh = CreateDefaultSubobject<UProceduralMeshComponent>(TEXT("Terrain Mesh"));
 	SetRootComponent(TerrainMesh);
 
-	ConstructorHelpers::FObjectFinder<UMaterialInstance> grassMaterial(TEXT("M_Terrain_Grass'/Game/Materials/M_Terrain_Grass.M_Terrain_Grass'"));
-	GrassMaterial = grassMaterial.Object;
 	ConstructorHelpers::FObjectFinder<UMaterialInstance> deepGrassMaterial(TEXT("M_Terrain_DeepGrass'/Game/Materials/M_Terrain_DeepGrass.M_Terrain_DeepGrass'"));
 	DeepGrassMaterial = deepGrassMaterial.Object;
 	ConstructorHelpers::FObjectFinder<UMaterialInstance> gravelMaterial(TEXT("M_Terrain_Gravel'/Game/Materials/M_Terrain_Gravel.M_Terrain_Gravel'"));
@@ -50,14 +48,11 @@ void ATerrain::CreateLanes(FastNoise* noise)
 		// Generate triangles for grid of vertices
 		UKismetProceduralMeshLibrary::CreateGridMeshTriangles(SizeX, SizeY, false, laneGeo.Triangles);
 
+		// Shift vertices into correct position
 		for(auto& vertex : laneGeo.Vertices)
 		{
 			vertex.X += (LaneXOffset * Scale * i) + (i * Scale);
 		}
-
-		// Store the tallest vector index and height
-		float tallestVectorHeight = 0;
-		int tallestVector = 0;
 
 		// For each vertex, get 2 different noise values and apply them to vertex height at different scales.
 		for (int j = 0; j < laneGeo.Vertices.Num(); j++)
@@ -68,23 +63,18 @@ void ATerrain::CreateLanes(FastNoise* noise)
 			laneGeo.Vertices[j].Z += result1 * 100;
 			auto result2 = noise->GetNoise((input.X + GetActorLocation().X) / 20, (input.Y + GetActorLocation().Y) / 20);
 			laneGeo.Vertices[j].Z += result2 * 70;
-
-			// Find the tallest vector and store in variables
-			if (laneGeo.Vertices[j].Z > tallestVectorHeight)
-			{
-				tallestVector = j;
-				tallestVectorHeight = laneGeo.Vertices[j].Z;
-			}
 		}
 
 		laneGeo.Normals = CalculateNormals(laneGeo.Vertices, laneGeo.Triangles);
 
 		TerrainMesh->CreateMeshSection(i, laneGeo.Vertices, laneGeo.Triangles, laneGeo.Normals, laneGeo.UVs, laneGeo.VertexColours, laneGeo.Tangents, true);
 
+		// Set material per lane
 		if(laneGeo.Lane == Valley || laneGeo.Lane == Deep || laneGeo.Lane == Grass)	TerrainMesh->SetMaterial(i, DeepGrassMaterial);
 		else if (laneGeo.Lane == Gravel) TerrainMesh->SetMaterial(i, GravelMaterial);
-		//else if(laneGeo.Lane == Grass) TerrainMesh->SetMaterial(i, GrassMaterial);
+		
 		LaneGeometry.Push(laneGeo);
+		
 		PlaceObstacles(noise,i);
 	}
 	PlaceTrees(noise);
@@ -97,6 +87,23 @@ void ATerrain::Destroyed()
 	for (auto& obstacle : GrassObstacles)
 	{
 		obstacle->Destroy();
+	}
+
+	for (auto& pickup : HealthPickups)
+	{
+		pickup->Destroy();
+	}
+	for (auto& pickup : ScorePickups)
+	{
+		pickup->Destroy();
+	}
+	for (auto& pickup : ShieldPickups)
+	{
+		pickup->Destroy();
+	}
+	for (auto& pickup : SpeedPickups)
+	{
+		pickup->Destroy();
 	}
 }
 
@@ -125,6 +132,7 @@ TArray<FVector> ATerrain::CalculateNormals(TArray<FVector> vertices, TArray<int3
 		auto b = vertices[triangles[i + 1]];
 		auto c = vertices[triangles[i + 2]];
 
+		
 		auto v1 = a - b;
 		auto v2 = c - b;
 		auto n = v1 ^ v2;
@@ -152,6 +160,7 @@ void ATerrain::PlaceTrees(FastNoise* noise)
 	{
 		for(auto& vertex : valley.Vertices)
 		{
+			// Sample noise to determine tree placement
 			float treeNoise = noise->GetNoise((vertex.X + GetActorLocation().X) / 0.25, (vertex.Y + GetActorLocation().Y) / 0.25);
 
 			if(treeNoise > treeNoiseThreshold)
@@ -180,36 +189,102 @@ void ATerrain::PlaceObstacles(FastNoise* noise, int lane)
 
 	auto meshes = GrassMeshes;
 
-	for (int i = 0; i < LaneGeometry[lane].Vertices.Num(); i += 8)
+	for (int i = 0; i < LaneGeometry[lane].Vertices.Num(); i += 6)
 	{
 		auto vertex = LaneGeometry[lane].Vertices[i];
+
+		// Vertices on edges of lanes are shared so get sampled twice. Skip these
 		if (vertex.X == i * SizeX * Scale || vertex.X == i - 1 * SizeX * Scale) continue;
-		float obstacleNoise = noise->GetNoise((vertex.X + GetActorLocation().X), (vertex.Y + GetActorLocation().Y));
+
+		// Sample noise to determine obstacle placement
+		float obstacleNoise = noise->GetNoise((vertex.X + GetActorLocation().X) / 0.5, (vertex.Y + GetActorLocation().Y) / 0.5);
+
 		if (obstacleNoise > obstacleNoiseThreshold)
 		{
 			int meshNum = FMath::RandRange(0, meshes.Num() - 1);
 
 			// Set location to vertex position and scale randomly
 			FTransform transform;
-			transform.SetLocation(vertex + GetActorLocation());
+			FVector location = vertex + GetActorLocation();
+			transform.SetLocation(location);
 			FQuat rotation = FVector{ 0,0,0 }.ToOrientationQuat();		
 			FVector scale = FVector{ float(FMath::RandRange(0.8, 1.2)) };
 
+			// Roll for a mesh to use
 			auto staticMesh = meshes[meshNum];
+			if (meshNum == 8 || meshNum == 9 || meshNum == 6)
+			{
+				meshNum = FMath::RandRange(0, meshes.Num() - 1); // Roll again if pickup to reduce frequency
+				staticMesh = meshes[meshNum];
+			}
+
+			// Scale according to mesh
 			if (meshNum == 0 || meshNum == 1) scale = FVector{ float(FMath::RandRange(0.6f, 1.1f)) };
-			if (meshNum == 2 || meshNum == 3) scale = FVector{ float(FMath::RandRange(1.0f, 2.5f)) };
-			if (meshNum == 4) scale = FVector{ float(FMath::RandRange(0.8f, 1.0f)) };
-			if (meshNum == 5) scale = FVector{ float(FMath::RandRange(2.5f, 3.0f)) };
-			if (meshNum == 6) scale = FVector{ float(FMath::RandRange(1.0f, 1.5f)) };
+			else if (meshNum == 2 || meshNum == 3) scale = FVector{ float(FMath::RandRange(1.3f, 2.5f)) };
+			else if (meshNum == 4) scale = FVector{ float(FMath::RandRange(1.0f, 1.2f)) };
+			else if (meshNum == 5) scale = FVector{ float(FMath::RandRange(2.5f, 3.0f)) };
+			else if (meshNum == 6) scale = FVector{ float(0.1f) };
+			else if (meshNum == 7) scale = FVector{ float(0.1f) };
+			else if (meshNum == 9) scale = FVector{ float(0.3f) };
+			else if (meshNum == 8) scale = FVector{ float(0.05f)};
 			transform.SetScale3D(scale);
 			transform.SetRotation(rotation);
 
 			FActorSpawnParameters params;
 			params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::DontSpawnIfColliding;
 
-			auto newObstacle = GetWorld()->SpawnActor<AObstacle>(ObstacleClass,transform, params);
-			newObstacle->StaticMesh->SetStaticMesh(staticMesh);
-			GrassObstacles.Push(newObstacle);
+			// Spawn health pickup
+			if (meshNum == 6)
+			{
+				location.Z += FMath::RandRange(2, 5) * Scale;
+				transform.SetLocation(location);
+				auto newPickup = GetWorld()->SpawnActor<AHealthPickup>(HealthClass, transform, params);
+				newPickup->StaticMesh->SetStaticMesh(staticMesh);
+				HealthPickups.Push(newPickup);
+			}
+			// Spawn score pickup
+			else if (meshNum == 7)
+			{
+				location.Z += FMath::RandRange(2, 5) * Scale;
+				
+				for (int j = 0; j < FMath::RandRange(3, 5); j++)
+				{
+					transform.SetLocation(location);
+					auto newPickup = GetWorld()->SpawnActor<AScorePickup>(ScoreClass, transform, params);
+					newPickup->StaticMesh->SetStaticMesh(staticMesh);
+					ScorePickups.Push(newPickup);
+					location.Y += 2 * Scale;
+				}
+			}
+			// Spawn speed pickup
+			else if(meshNum == 8)
+			{
+				location.Z += FMath::RandRange(2, 5) * Scale;
+				rotation = FVector{ -90,0,0 }.ToOrientationQuat();
+				transform.SetRotation(rotation);
+				transform.SetLocation(location);
+				auto newPickup = GetWorld()->SpawnActor<ASpeedPickup>(SpeedClass, transform, params);
+				newPickup->StaticMesh->SetStaticMesh(staticMesh);
+				SpeedPickups.Push(newPickup);
+			}
+			// Spawn shield pickup
+			else if (meshNum == 9)
+			{
+				location.Z += FMath::RandRange(2, 5) * Scale;
+				rotation = FVector{ -90,0,0 }.ToOrientationQuat();
+				transform.SetRotation(rotation);
+				transform.SetLocation(location);
+				auto newPickup = GetWorld()->SpawnActor<AShieldPickup>(ShieldClass, transform, params);
+				newPickup->StaticMesh->SetStaticMesh(staticMesh);
+				ShieldPickups.Push(newPickup);
+			}
+			// Spawn obstacle
+			else
+			{
+				auto newObstacle = GetWorld()->SpawnActor<AObstacle>(ObstacleClass, transform, params);
+				newObstacle->StaticMesh->SetStaticMesh(staticMesh);
+				GrassObstacles.Push(newObstacle);
+			}			
 		}
 	}
 }
@@ -223,7 +298,10 @@ void ATerrain::LoadObstacleModels()
 	ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset4(TEXT("StaticMesh'/Game/Models/Nature/Rock_Moss_2'"));
 	ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset5(TEXT("StaticMesh'/Game/Models/Nature/TreeStump'"));
 	ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset6(TEXT("StaticMesh'/Game/Models/Crops/Mushroom_3'"));
-	ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset7(TEXT("StaticMesh'/Game/Models/Crops/Pumpkin_Crop'"));
+	ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset7(TEXT("StaticMesh'/Game/Models/Cross'"));
+	ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset8(TEXT("StaticMesh'/Game/Models/Icosahedron'"));
+	ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset9(TEXT("StaticMesh'/Game/Models/Arrow'"));
+	ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset10(TEXT("StaticMesh'/Game/Models/Shield'"));
 
 	// Create new instanced SMC and push into vector
 	GrassMeshes.Push(MeshAsset1.Object);
@@ -233,6 +311,9 @@ void ATerrain::LoadObstacleModels()
 	GrassMeshes.Push(MeshAsset5.Object);
 	GrassMeshes.Push(MeshAsset6.Object);
 	GrassMeshes.Push(MeshAsset7.Object);
+	GrassMeshes.Push(MeshAsset8.Object);
+	GrassMeshes.Push(MeshAsset9.Object);
+	GrassMeshes.Push(MeshAsset10.Object);
 }
 
 void ATerrain::LoadTreeModels()

@@ -59,10 +59,6 @@ void ABackTerrain::CreateTerrain(FastNoise* noise)
 	// Generate triangles for grid of vertices
 	UKismetProceduralMeshLibrary::CreateGridMeshTriangles(SizeX, SizeY, false, Triangles);
 
-	// Store the tallest vector index and height
-	float tallestVectorHeight = 0;
-	int tallestVector = 0;
-
 	// For each vertex, get 2 different noise values and apply them to vertex height at different scales.
 	for (int j = 0; j < Vertices.Num(); j++)
 	{
@@ -72,13 +68,6 @@ void ABackTerrain::CreateTerrain(FastNoise* noise)
 		Vertices[j].Z += result1 * 100;
 		auto result2 = noise->GetNoise((input.X + GetActorLocation().X) / 20, (input.Y + GetActorLocation().Y) / 20);
 		Vertices[j].Z += result2 * 70;
-
-		// Find the tallest vector and store in variables
-		if (Vertices[j].Z > tallestVectorHeight)
-		{
-			tallestVector = j;
-			tallestVectorHeight = Vertices[j].Z;
-		}
 	}
 
 	Normals = CalculateNormals(Vertices, Triangles);

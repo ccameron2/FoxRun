@@ -18,13 +18,14 @@ void AGamesFiveGameModeBase::StartPlay()
 	transform.SetScale3D(scale);
 	transform.SetTranslation(location);
 
-	Seed = FMath::RandRange(0, 69420);
+	Seed = FMath::RandRange(0, 70000);
 
 	Noise.SetNoiseType(FastNoise::SimplexFractal);
 	Noise.SetSeed(Seed);
 
 	PlayerCharacter = Cast<AThirdPersonCharacter>(GetWorld()->GetFirstPlayerController()->GetCharacter());
 
+	// Generate initial terrain
 	for (int i = 0; i < 4; i++)
 	{
 		TerrainBlocks.Push(GetWorld()->SpawnActor<ATerrainBlock>(TerrainBlockClass, transform));
@@ -38,9 +39,13 @@ void AGamesFiveGameModeBase::StartPlay()
 
 void AGamesFiveGameModeBase::Tick(float DeltaSeconds)
 {
+	PlayerCharacter = Cast<AThirdPersonCharacter>(GetWorld()->GetFirstPlayerController()->GetCharacter());
+	if (!PlayerCharacter) return;
+
+	Score = PlayerCharacter->GetScore();
+
 	// Save player location on first tick (cant be done in startplay as character spawned later)
 	if (FirstTick) { LastPlayerLocation = PlayerCharacter->GetActorLocation(); FirstTick = false; }
-	
 	static auto scale = TerrainBlocks[0]->Terrain->Scale;
 	static auto sizeY = TerrainBlocks[0]->Terrain->SizeY;
 	static int numLanes = TerrainBlocks[0]->Terrain->NumLanes;
@@ -57,12 +62,14 @@ void AGamesFiveGameModeBase::Tick(float DeltaSeconds)
 				PlayerCharacter->GetCharacterMovement()->MaxWalkSpeed += 80;
 				PlayerCharacter->AddScore(100);
 				
+				// Spawn Params
 				FVector location = FVector{ 0,float(sizeY * scale * BlockIndex) - (30 * BlockIndex),0 };
 				FVector terrainscale = FVector(1, 1, 1);
 				FTransform transform;
 				transform.SetScale3D(terrainscale);
 				transform.SetTranslation(location);
 
+				// Spawn a new terrain block and increment block index
 				auto terrainBlock = GetWorld()->SpawnActor<ATerrainBlock>(TerrainBlockClass, transform);
 				terrainBlock->PlaceBlocks(&Noise, location, BlockIndex / 100);
 				TerrainBlocks.Push(terrainBlock);
@@ -81,6 +88,7 @@ void AGamesFiveGameModeBase::Tick(float DeltaSeconds)
 	}
 	else
 	{
+		// If player is slighty into the second block
 		if (PlayerCharacter->GetActorLocation().Y > (scale * sizeY * (BlockIndex - 2)) - 2 * scale)
 		{
 			Generated = false;
@@ -95,8 +103,8 @@ void AGamesFiveGameModeBase::Tick(float DeltaSeconds)
 	}
 	else if (PlayerCharacter->GetActorLocation().X < (laneSizeX * scale))
 	{
-		LastPlayerLocation += FVector{ float(scale / 2),0,0};
+		LastPlayerLocation += FVector{ float(scale / 2),0,0 };
 		PlayerCharacter->SetActorLocation(LastPlayerLocation);
 	}
-	LastPlayerLocation = PlayerCharacter->GetActorLocation();
+	LastPlayerLocation = PlayerCharacter->GetActorLocation();	
 }

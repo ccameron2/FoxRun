@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include "ResourcePickup.h"
 #include "TerrainBlock.h"
 #include "ThirdPersonCharacter.h"
 #include "CoreMinimal.h"
@@ -22,6 +21,10 @@ public:
 protected:
 	virtual void StartPlay() override;
 	virtual void Tick(float DeltaSeconds) override;
+
+public:
+	UPROPERTY(BlueprintReadOnly)
+		int Score;
 private:
 	UPROPERTY(VisibleAnywhere)
 		TArray<ATerrainBlock*> TerrainBlocks;

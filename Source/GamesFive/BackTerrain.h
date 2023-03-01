@@ -54,7 +54,6 @@ private:
 	int Scale = 30;
 	int SizeX = 30;
 	
-
 	TArray<UInstancedStaticMeshComponent*> StaticMeshes;
 
 };

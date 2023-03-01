@@ -1,19 +1,22 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 #include "ThirdPersonCharacter.h"
-#include "GameFramework/PawnMovementComponent.h" 
+#include "GameFramework/CharacterMovementComponent.h" 
 #include "Kismet/GameplayStatics.h"
-
 // Sets default values
 AThirdPersonCharacter::AThirdPersonCharacter()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	GetMesh()->SetupAttachment(RootComponent);
+
 	CollisionSphere = CreateDefaultSubobject<USphereComponent>(TEXT("Collision Sphere"));
 	CollisionSphere->InitSphereRadius(0.8f);
 	CollisionSphere->SetupAttachment(GetMesh(), "head");
 
-	// Create spring arm and attach to the root component
+	ShieldMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Shield Mesh"));
+	ShieldMesh->SetupAttachment(GetMesh());
+
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("Spring Arm"));
 
 	// Spring Arm settings
@@ -37,6 +40,8 @@ void AThirdPersonCharacter::BeginPlay()
 	Super::BeginPlay();
 	CollisionSphere->OnComponentBeginOverlap.AddDynamic(this, &AThirdPersonCharacter::OnOverlapBegin);
 	ThirdPersonCamera->SetActive(true);
+	MinMovementSpeed = GetCharacterMovement()->MaxWalkSpeed;
+	ShieldMesh->ToggleVisibility();
 }
 
 // Called every frame
@@ -48,6 +53,7 @@ void AThirdPersonCharacter::Tick(float DeltaTime)
 	{
 		Destroy();
 	}
+	ShieldMesh->AddLocalRotation(FRotator{ 0,2,0 });
 }
 
 // Called to bind functionality to input
@@ -75,11 +81,11 @@ void AThirdPersonCharacter::Strafe(float AxisValue)
 	//Strafe character left and right
 	if (Controller != nullptr && AxisValue != 0)
 	{
+		if (GetCharacterMovement()->IsFalling()) return;
 		const FRotator Rotation = Controller->GetControlRotation();
 		const FRotator YawRotation(0, Rotation.Yaw, 0);
 		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
-		if (!Walking) AddMovementInput(Direction, AxisValue);
-		else AddMovementInput(Direction, AxisValue / 4);
+		SetActorLocation(GetActorLocation() += GetActorRightVector() * StrafeSpeed * AxisValue);
 	}
 }
 
@@ -121,7 +127,32 @@ void AThirdPersonCharacter::OnOverlapBegin(class UPrimitiveComponent* Overlapped
 		auto obstacle = Cast<AObstacle>(OtherActor);
 		if (obstacle)
 		{
-			HealthPoints -= 20;
+			if(!Shielded)	HealthPoints -= 20;
+		}
+		auto health = Cast<AHealthPickup>(OtherActor);
+		if (health)
+		{
+			if (HealthPoints + health->HealthAmount > MaxHealth) HealthPoints = MaxHealth;
+			else HealthPoints += health->HealthAmount;
+		}
+		auto score = Cast<AScorePickup>(OtherActor);
+		if (score)
+		{
+			Score += score->ScoreAmount;
+		}
+		auto speed = Cast<ASpeedPickup>(OtherActor);
+		if (speed)
+		{
+			if (GetCharacterMovement()->MaxWalkSpeed - speed->SpeedAmount < MinMovementSpeed) GetCharacterMovement()->MaxWalkSpeed = MinMovementSpeed;
+			else GetCharacterMovement()->MaxWalkSpeed -= speed->SpeedAmount;
+		}
+		auto shield = Cast<AShieldPickup>(OtherActor);
+		if (shield)
+		{
+			if(Shielded) return;
+			ShieldMesh->ToggleVisibility();
+			Shielded = true;
+			GetWorld()->GetTimerManager().SetTimer(ShieldTimerHandle, this, &AThirdPersonCharacter::ShieldTimerEnd, shield->ShieldDuration);
 		}
 		OtherActor->Destroy();
 	}
@@ -130,4 +161,10 @@ void AThirdPersonCharacter::OnOverlapBegin(class UPrimitiveComponent* Overlapped
 void AThirdPersonCharacter::JumpTimerEnd()
 {
 	CanJump = true;
+}
+
+void AThirdPersonCharacter::ShieldTimerEnd()
+{
+	ShieldMesh->ToggleVisibility();
+	Shielded = false;
 }

@@ -7,6 +7,10 @@
 #include "External/FastNoise.h"
 #include "Obstacle.h"
 #include "Containers/Map.h"
+#include "HealthPickup.h"
+#include "ScorePickup.h"
+#include "SpeedPickup.h"
+#include "ShieldPickup.h"
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
@@ -65,7 +69,19 @@ public:
 		float obstacleNoiseThreshold = 0.6f;
 
 	UPROPERTY(EditAnywhere)
-	TSubclassOf<AObstacle> ObstacleClass;
+		TSubclassOf<AObstacle> ObstacleClass;
+
+	UPROPERTY(EditAnywhere)
+		TSubclassOf<AHealthPickup> HealthClass;
+
+	UPROPERTY(EditAnywhere)
+		TSubclassOf<AScorePickup> ScoreClass;
+
+	UPROPERTY(EditAnywhere)
+		TSubclassOf<ASpeedPickup> SpeedClass;
+
+	UPROPERTY(EditAnywhere)
+		TSubclassOf<AShieldPickup> ShieldClass;
 
 	int Scale = 30;
 	int SizeX = 10;
@@ -87,6 +103,10 @@ private:
 	TArray<UStaticMesh*> GrassMeshes;
 
 	TArray<AObstacle*> GrassObstacles;
+	TArray<AHealthPickup*> HealthPickups;
+	TArray<AScorePickup*> ScorePickups;
+	TArray<AShieldPickup*> ShieldPickups;
+	TArray<ASpeedPickup*> SpeedPickups;
 
 	int LaneXOffset = SizeX - 2;
 	

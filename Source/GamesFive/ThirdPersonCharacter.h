@@ -1,12 +1,16 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
-
+#include "SpeedPickup.h"
+#include "HealthPickup.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "ResourcePickup.h"
+#include "ScorePickup.h"
+#include "ShieldPickup.h"
 #include "Obstacle.h"
+
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "ThirdPersonCharacter.generated.h"
@@ -57,6 +61,7 @@ public:
 	UFUNCTION()
 		void AddScore(int amount);
 
+	float MinMovementSpeed;
 private:
 	UPROPERTY(EditAnywhere)
 		float MaxHealth = 100.0f;
@@ -66,6 +71,9 @@ private:
 
 	UPROPERTY(VisibleAnywhere)
 		float Score = 0.0f;
+
+	UPROPERTY(VisibleAnywhere)
+		float StrafeSpeed = 10.0f;
 
 	UFUNCTION()
 		virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
@@ -79,8 +87,14 @@ private:
 	UPROPERTY(EditAnywhere)
 		USpringArmComponent* SpringArm;
 
+	UPROPERTY(EditAnywhere)
+		UStaticMeshComponent* ShieldMesh;
+
 	void JumpTimerEnd();
 	FTimerHandle JumpTimerHandle;
+	void ShieldTimerEnd();
+	FTimerHandle ShieldTimerHandle;
 	bool CanJump = true;
+	bool Shielded = false;
 
 };
